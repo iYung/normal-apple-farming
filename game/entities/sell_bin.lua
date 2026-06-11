@@ -9,9 +9,9 @@ function SellBin.new(x, y)
     self._type = "sell_bin"
     self.x     = x
     self.y     = y
-    self.w     = 64
-    self.h     = 64
-    self.sprite = Sprite.new(x, y, 64, 64)
+    self.w     = 96
+    self.h     = 96
+    self.sprite = Sprite.new(x, y, 96, 96)
     self.sprite.image = love.graphics.newImage("assets/images/sell_bin/sell_bin.png")
     return self
 end

@@ -5,7 +5,7 @@ Pruner.__index = Pruner
 setmetatable(Pruner, { __index = Item })
 
 function Pruner.new(x, y)
-    local self = Item.new(x, y, "Pruner", "assets/images/items/pruner.png", 32, 32)
+    local self = Item.new(x, y, "Pruner", "assets/images/items/pruner.png", 96, 96)
     setmetatable(self, Pruner)
     self._type = "pruner"
     return self

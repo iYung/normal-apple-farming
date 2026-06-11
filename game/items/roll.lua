@@ -7,7 +7,7 @@ Roll.__index = Roll
 setmetatable(Roll, { __index = Item })  -- inherit from Item
 
 function Roll.new(x, y)
-    local self = Item.new(x, y, "Wire Roll", "assets/images/items/wire_roll.png", 32, 32)
+    local self = Item.new(x, y, "Wire Roll", "assets/images/items/wire_roll.png", 48, 48)
     setmetatable(self, Roll)
     self._type = "roll"
     return self

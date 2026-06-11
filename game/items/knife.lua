@@ -6,7 +6,7 @@ Knife.__index = Knife
 setmetatable(Knife, { __index = Item })
 
 function Knife.new(x, y)
-    local self = Item.new(x, y, "Knife", "assets/images/items/knife.png", 32, 32)
+    local self = Item.new(x, y, "Knife", "assets/images/items/knife.png", 48, 48)
     setmetatable(self, Knife)
     self._type = "knife"
     return self

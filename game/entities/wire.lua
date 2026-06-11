@@ -14,7 +14,7 @@ function Wire.new(tx, ty)
     self.y  = ty * Mapper.TILE
     self.w  = Mapper.TILE
     self.h  = Mapper.TILE
-    self.sprite = Sprite.new(self.x, self.y, self.w, self.h)
+    self.sprite = Sprite.new(self.x, self.y, 48, 48)
     self.sprite.image = love.graphics.newImage("assets/images/items/wire.png")
     return self
 end

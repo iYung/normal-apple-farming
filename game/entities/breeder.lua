@@ -29,9 +29,9 @@ function Breeder.new(x, y)
     self._sprite_one.image   = love.graphics.newImage("assets/images/breeder/love_bin_1.png")
     self._sprite_two   = Sprite.new(x, y, 96, 96)
     self._sprite_two.image   = love.graphics.newImage("assets/images/breeder/love_bin_2.png")
-    self._bar_back     = Sprite.new(x, y + 88, 96, 8)
+    self._bar_back     = Sprite.new(x, y + 88, 70, 11)
     self._bar_back.image     = love.graphics.newImage("assets/images/breeder/love_bin_bar_back.png")
-    self._bar_fill     = Sprite.new(x, y + 88, 96, 8)
+    self._bar_fill     = Sprite.new(x, y + 88, 70, 11)
     self._bar_fill.image     = love.graphics.newImage("assets/images/breeder/love_bin_bar.png")
 
     return self
