@@ -86,21 +86,22 @@ function Animal:update(dt, wire_grid)
 
     -- Wire bounce: AABB check against each wire in the grid
     if wire_grid then
-        local bounced_this_frame = false
+        local overlapping = false
         for _, wire in pairs(wire_grid) do
             if type(wire) == "table" and wire.x then
                 if self.x < wire.x + wire.w and self.x + self.w > wire.x
                 and self.y < wire.y + wire.h and self.y + self.h > wire.y then
+                    overlapping = true
                     if not self.bounced then
                         self.vx = -self.vx
                         self.vy = -self.vy
                         self.bounced = true
-                        bounced_this_frame = true
                     end
                 end
             end
         end
-        if not bounced_this_frame then
+        -- Only clear bounced once the animal has fully exited all wires
+        if not overlapping then
             self.bounced = false
         end
     end
