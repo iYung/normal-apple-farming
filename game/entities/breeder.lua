@@ -34,9 +34,9 @@ function Breeder.new(x, y)
     self._sprite_one.image   = love.graphics.newImage("assets/images/breeder/love_bin_1.png")
     self._sprite_two   = Sprite.new(x, y, 96, 96)
     self._sprite_two.image   = love.graphics.newImage("assets/images/breeder/love_bin_2.png")
-    self._bar_back     = Sprite.new(x, y + 88, 70, 11)
+    self._bar_back     = Sprite.new(x + 12, y + 65, 70, 11)
     self._bar_back.image     = love.graphics.newImage("assets/images/breeder/love_bin_bar_back.png")
-    self._bar_fill     = Sprite.new(x, y + 88, 70, 11)
+    self._bar_fill     = Sprite.new(x + 12, y + 65, 70, 11)
     self._bar_fill.image     = love.graphics.newImage("assets/images/breeder/love_bin_bar.png")
 
     return self
@@ -94,11 +94,11 @@ end
 
 function Breeder:draw()
     -- Sync sprite positions to current entity position
-    self._sprite_empty.x = self.x; self._sprite_empty.y = self.y
-    self._sprite_one.x   = self.x; self._sprite_one.y   = self.y
-    self._sprite_two.x   = self.x; self._sprite_two.y   = self.y
-    self._bar_back.x     = self.x; self._bar_back.y     = self.y + 88
-    self._bar_fill.x     = self.x; self._bar_fill.y     = self.y + 88
+    self._sprite_empty.x = self.x;      self._sprite_empty.y = self.y
+    self._sprite_one.x   = self.x;      self._sprite_one.y   = self.y
+    self._sprite_two.x   = self.x;      self._sprite_two.y   = self.y
+    self._bar_back.x     = self.x + 12; self._bar_back.y     = self.y + 65
+    self._bar_fill.x     = self.x + 12; self._bar_fill.y     = self.y + 65
 
     local progress = 0
     if self._breeding then
@@ -115,6 +115,13 @@ function Breeder:draw()
         body = self._sprite_two
     end
 
+    -- Draw progress bar behind the body sprite (visible through the hole in the image)
+    if self._breeding then
+        self._bar_back:draw()
+        self._bar_fill.scale_x = progress
+        self._bar_fill:draw()
+    end
+
     -- Outline pass when highlighted
     if self.highlighted then
         OutlineShader.apply(self._outline_shader, 1, 0.9, 0, 96, 96)
@@ -122,20 +129,13 @@ function Breeder:draw()
         OutlineShader.clear()
     end
 
-    -- Apply sway shader when breeding
+    -- Body sprite (with optional sway shader) drawn on top of bar
     if self._breeding then
         SwayShader.apply(self._sway_shader, self._sway_time)
     end
     body:draw()
     if self._breeding then
         SwayShader.clear()
-    end
-
-    -- Draw progress bar
-    if self._breeding then
-        self._bar_back:draw()
-        self._bar_fill.scale_x = progress
-        self._bar_fill:draw()
     end
 end
 
