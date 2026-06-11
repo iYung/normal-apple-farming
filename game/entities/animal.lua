@@ -35,9 +35,14 @@ function Animal.new(x, y, stats)
     self._color_shader   = AnimalColorShader.new()
     self._outline_shader = OutlineShader.new()
 
-    -- Body sprite (48×48)
-    self._body_sprite = Sprite.new(0, 0, 48, 48)
-    self._body_sprite.image = love.graphics.newImage("assets/images/animal/animal_body.png")
+    -- Body sprites: one per height segment, stacked upward with -15px offsets
+    local body_img = love.graphics.newImage("assets/images/animal/animal_body.png")
+    self._body_sprites = {}
+    for i = 1, self.stats.height do
+        local bs = Sprite.new(0, 0, 48, 48)
+        bs.image = body_img
+        table.insert(self._body_sprites, bs)
+    end
 
     -- Legs sprites (48×48 each); visibility toggled based on movement
     self._legs_still = Sprite.new(0, 0, 48, 48)
@@ -114,15 +119,15 @@ function Animal:update(dt, wire_grid)
     -- Flip all sprites based on horizontal movement direction
     local moving = math.abs(self.vx) > 1 or math.abs(self.vy) > 1
     if self.vx > 0 then
-        self._body_sprite.scale_x  = -1
-        self._legs_still.scale_x   = -1
-        self._legs_walk.scale_x    = -1
-        self._face_sprite.scale_x  = -1
+        for _, bs in ipairs(self._body_sprites) do bs.scale_x = -1 end
+        self._legs_still.scale_x  = -1
+        self._legs_walk.scale_x   = -1
+        self._face_sprite.scale_x = -1
     elseif self.vx < 0 then
-        self._body_sprite.scale_x  = 1
-        self._legs_still.scale_x   = 1
-        self._legs_walk.scale_x    = 1
-        self._face_sprite.scale_x  = 1
+        for _, bs in ipairs(self._body_sprites) do bs.scale_x = 1 end
+        self._legs_still.scale_x  = 1
+        self._legs_walk.scale_x   = 1
+        self._face_sprite.scale_x = 1
     end
 
     -- Alternate legs sprites while moving
@@ -143,31 +148,37 @@ end
 function Animal:draw()
     local bx = self.x
     local by = self.y
+    local BODY_OFFSET = -15  -- each segment sits 15px above the one below (matches Godot)
+    local top_y = by + (#self._body_sprites - 1) * BODY_OFFSET
 
-    -- Sync all positions first
+    -- Sync leg and face positions
     self._legs_still.x = bx; self._legs_still.y = by
     self._legs_walk.x  = bx; self._legs_walk.y  = by
-    self._body_sprite.x = bx; self._body_sprite.y = by
-    self._face_sprite.x = bx; self._face_sprite.y = by
+    self._face_sprite.x = bx; self._face_sprite.y = top_y
 
-    -- Outline pass: draw all parts with outline shader so border surrounds the whole animal.
-    -- These pixels land in the transparent border area and survive the normal pass below.
+    -- Sync body segment positions
+    for i, bs in ipairs(self._body_sprites) do
+        bs.x = bx
+        bs.y = by + (i - 1) * BODY_OFFSET
+    end
+
+    -- Outline pass: all parts with outline shader; border pixels survive the normal pass
     if self.highlighted then
         OutlineShader.apply(self._outline_shader, 1, 0.9, 0, 48, 48)
         if self._legs_still.visible then self._legs_still:draw() end
         if self._legs_walk.visible  then self._legs_walk:draw()  end
-        self._body_sprite:draw()
+        for _, bs in ipairs(self._body_sprites) do bs:draw() end
         self._face_sprite:draw()
         OutlineShader.clear()
     end
 
-    -- Normal pass
+    -- Normal pass: legs, tinted body segments (bottom to top), face
     if self._legs_still.visible then self._legs_still:draw() end
     if self._legs_walk.visible  then self._legs_walk:draw()  end
 
     AnimalColorShader.apply(self._color_shader,
         self.stats.color.r, self.stats.color.g, self.stats.color.b)
-    self._body_sprite:draw()
+    for _, bs in ipairs(self._body_sprites) do bs:draw() end
     AnimalColorShader.clear()
 
     self._face_sprite:draw()
