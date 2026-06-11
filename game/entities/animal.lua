@@ -48,7 +48,8 @@ function Animal.new(x, y, stats)
     self._legs_still = Sprite.new(0, 0, 48, 48)
     self._legs_still.image = love.graphics.newImage("assets/images/animal/animal_legs_still.png")
     self._legs_walk  = Sprite.new(0, 0, 48, 48)
-    self._legs_walk.image  = love.graphics.newImage("assets/images/animal/animal_legs_walk.png")
+    self._legs_walk.image   = love.graphics.newImage("assets/images/animal/animal_legs_walk.png")
+    self._legs_walk.visible = false
 
     -- Preload all face images keyed by personality to avoid per-frame disk reads
     self._face_images = {}
