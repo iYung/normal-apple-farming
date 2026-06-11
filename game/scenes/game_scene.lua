@@ -191,11 +191,14 @@ function GameScene:draw()
         w:draw()
     end
 
-    -- Items (not held ones)
+    -- Items (including held ones — held item stays in world space at zoom)
     for _, it in ipairs(self.items) do
         if not it.held then
             it:draw()
         end
+    end
+    if self.player.held_item and self.player.held_item._type ~= "animal" then
+        self.player.held_item:draw()
     end
 
     -- Animals
@@ -204,17 +207,16 @@ function GameScene:draw()
             a:draw()
         end
     end
+    if self.player.held_item and self.player.held_item._type == "animal" then
+        self.player.held_item:draw()
+    end
 
     self.camera:detach()
 
-    -- Player and held item drawn without zoom: translate to world position
-    -- at scale 1 so their pixel size stays the same regardless of ZOOM
+    -- Player drawn without zoom so its pixel size is independent of ZOOM
     love.graphics.push()
     love.graphics.translate(1280 / 2, 720 / 2)
     love.graphics.translate(-self.camera.x, -self.camera.y)
-    if self.player.held_item then
-        self.player.held_item:draw()
-    end
     self.player:draw()
     love.graphics.pop()
 
