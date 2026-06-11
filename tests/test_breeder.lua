@@ -48,9 +48,9 @@ assert(type(offspring.height) == "number", "offspring should have height")
 assert(type(offspring.personality) == "string", "offspring should have personality")
 print("PASS: produces offspring after breed time")
 
--- Test 6: after breeding, slots are cleared
-assert(b:is_empty(), "slots should be cleared after breeding")
-assert(b._breeding == false, "breeding flag should be cleared")
-print("PASS: slots cleared after breeding")
+-- Test 6: after breeding, parents remain and breeding continues
+assert(b:is_full(), "parents should remain in slots after breeding")
+assert(b._breeding == true, "breeding flag should remain set for continuous breeding")
+print("PASS: parents remain after breeding")
 
 print("ALL TESTS PASSED")
