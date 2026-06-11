@@ -54,6 +54,15 @@ main.lua            Entry point — 1280×720 canvas with letterboxing
 
 See [`core/lua/README.md`](core/lua/README.md) for API docs on each engine class.
 
+## CI and web builds
+
+Two GitHub Actions workflows run on pushes and PRs to `master`:
+
+- **`.github/workflows/ci.yml`** — installs LÖVE 11.5 and runs `love . --headless` to verify tests pass.
+- **`.github/workflows/web.yml`** — builds a love.js web bundle via `bash scripts/build_web.sh`, deploys production builds to Cloudflare Pages (`normal-apple-farming` project) on push to `master`, and posts a preview link comment on PRs.
+
+To enable deploys, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as GitHub Actions secrets.
+
 ## Architecture notes
 
 - **Fixed logical resolution** — game renders to a `1280×720` canvas; `main.lua` scales it to the window with letterboxing. Works with any window size.

@@ -32,9 +32,9 @@ local cx, cy = Mapper.clamp(0, 0, 32, 32)  -- too far top-left
 assert(cx == 32, "clamp left edge: expected 32, got " .. cx)
 assert(cy == 32, "clamp top edge: expected 32, got " .. cy)
 
-local cx2, cy2 = Mapper.clamp(1300, 800, 32, 32)  -- too far bottom-right
-assert(cx2 == 1280 - 32 - 32, "clamp right edge")
-assert(cy2 == 720  - 32 - 32, "clamp bottom edge")
+local cx2, cy2 = Mapper.clamp(3000, 2000, 32, 32)  -- too far bottom-right
+assert(cx2 == Mapper.WORLD_W - 32 - 32, "clamp right edge")
+assert(cy2 == Mapper.WORLD_H - 32 - 32, "clamp bottom edge")
 
 local cx3, cy3 = Mapper.clamp(400, 300, 32, 32)  -- inside, should not move
 assert(cx3 == 400 and cy3 == 300, "inside-bounds should not be clamped")
