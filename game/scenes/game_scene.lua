@@ -19,6 +19,10 @@ local JobInfo      = require("game/ui/job_info")
 local MoneyInfo    = require("game/ui/money_info")
 local ActionsInfo  = require("game/ui/actions_info")
 
+local ZOOM    = 2
+local WORLD_W = 1280
+local WORLD_H = 720
+
 local GameScene = {}
 GameScene.__index = GameScene
 
@@ -26,6 +30,7 @@ function GameScene.new()
     local self = setmetatable({}, GameScene)
     self.drawer = Drawer.new()
     self.camera = Camera.new()
+    self.camera.zoom = ZOOM
     return self
 end
 
@@ -57,6 +62,8 @@ function GameScene:on_enter()
 
     -- Player
     self.player = Player.new(620, 330)
+    self.camera.x = 620 + 16  -- snap camera to player on load, no pan-in
+    self.camera.y = 330 + 24
 
     -- Systems
     self.job_generator = JobGenerator.new(self.game_state)
@@ -91,6 +98,13 @@ function GameScene:update(dt)
 
     -- Player update (passes self as scene)
     self.player:update(dt, self)
+
+    -- Camera: follow player, clamp to world edges
+    self.camera:follow(self.player:centre(), 0.08)
+    local half_vw = WORLD_W / (2 * ZOOM)
+    local half_vh = WORLD_H / (2 * ZOOM)
+    self.camera.x = math.max(half_vw, math.min(self.camera.x, WORLD_W - half_vw))
+    self.camera.y = math.max(half_vh, math.min(self.camera.y, WORLD_H - half_vh))
 
     -- Animals
     for _, a in ipairs(self.animals) do
@@ -157,9 +171,11 @@ function GameScene:update(dt)
 end
 
 function GameScene:draw()
+    self.camera:attach()
+
     -- Background
     love.graphics.setColor(0.25, 0.55, 0.2, 1)
-    love.graphics.rectangle("fill", 0, 0, 1280, 720)
+    love.graphics.rectangle("fill", 0, 0, WORLD_W, WORLD_H)
     if self._bg_img then
         love.graphics.setColor(1, 1, 1, 0.4)
         love.graphics.draw(self._bg_img, self._bg_quad, 0, 0)
@@ -175,7 +191,7 @@ function GameScene:draw()
         w:draw()
     end
 
-    -- Items (not held ones — held item drawn with player)
+    -- Items (not held ones)
     for _, it in ipairs(self.items) do
         if not it.held then
             it:draw()
@@ -189,22 +205,21 @@ function GameScene:draw()
         end
     end
 
-    -- Player (draws held item above itself)
-    if self.player.held_item and not Detector.is_animal(self.player.held_item) then
-        self.player.held_item:draw()
-    end
-    if self.player.held_item and Detector.is_animal(self.player.held_item) then
+    -- Held item and player
+    if self.player.held_item then
         self.player.held_item:draw()
     end
     self.player:draw()
 
-    -- HUD (drawn in screen space, no camera)
+    self.camera:detach()
+
+    -- HUD: screen space, unaffected by camera zoom
     self.animal_info:draw()
     self.money_info:draw()
     self.job_info:draw()
     self.actions_info:draw()
 
-    -- Shop overlay (on top of everything)
+    -- Shop overlay
     if self.shop_open then
         self.shop_ui:draw()
     end
