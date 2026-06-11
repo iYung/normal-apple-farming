@@ -181,7 +181,7 @@ function GameScene:draw()
     love.graphics.setColor(1, 1, 1, 1)
 
     -- Y-sort: collect wires, non-held items, animals, and player into one list
-    -- sorted by center Y so entities lower on screen draw on top.
+    -- sorted by bottom edge Y so entities lower on screen draw on top.
     local entities = {}
     for _, w in ipairs(self.wires) do
         table.insert(entities, w)
@@ -197,7 +197,7 @@ function GameScene:draw()
     table.insert(entities, self.player)
 
     table.sort(entities, function(a, b)
-        return (a.y + a.h / 2) < (b.y + b.h / 2)
+        return (a.y + a.h) < (b.y + b.h)
     end)
 
     for _, e in ipairs(entities) do

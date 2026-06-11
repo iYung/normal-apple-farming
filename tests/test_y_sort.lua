@@ -1,5 +1,5 @@
 -- test_y_sort.lua
--- Verifies that world entities are drawn in ascending center-Y order.
+-- Verifies that world entities are drawn in ascending bottom-edge Y order.
 
 local runner = require("lua/headless/runner")
 
@@ -33,13 +33,13 @@ player.draw = function(self)
     _player_draw(self)
 end
 
--- Player center Y = player.y + player.h/2.
--- player.y = WORLD_H/2 = 720, player.h = 96 → center Y = 768.
+-- Player bottom Y = player.y + player.h.
+-- player.y = WORLD_H/2 = 720, player.h = 96 → bottom Y = 816.
 
--- item_above: center Y = 100 + 24 = 124  < 768 → should draw BEFORE player
--- item_below: center Y = 900 + 24 = 924  > 768 → should draw AFTER  player
--- wire_above: center Y = 200 + 16 = 216  < 768 → should draw BEFORE player
--- wire_below: center Y = 850 + 16 = 866  > 768 → should draw AFTER  player
+-- item_above: bottom Y = 100 + 48 = 148  < 816 → should draw BEFORE player
+-- item_below: bottom Y = 900 + 48 = 948  > 816 → should draw AFTER  player
+-- wire_above: bottom Y = 200 + 32 = 232  < 816 → should draw BEFORE player
+-- wire_below: bottom Y = 850 + 32 = 882  > 816 → should draw AFTER  player
 
 local item_above = make_entity("item_above", 100, 48)
 local item_below = make_entity("item_below", 900, 48)
@@ -73,21 +73,20 @@ assert(idx_wire_below, "wire_below should be drawn")
 assert(idx_player,     "player should be drawn")
 
 assert(idx_item_above < idx_player,
-    "item above player (lower center Y) should draw before player")
+    "item above player (lower bottom Y) should draw before player")
 assert(idx_wire_above < idx_player,
-    "wire above player (lower center Y) should draw before player")
+    "wire above player (lower bottom Y) should draw before player")
 assert(idx_item_below > idx_player,
-    "item below player (higher center Y) should draw after player")
+    "item below player (higher bottom Y) should draw after player")
 assert(idx_wire_below > idx_player,
-    "wire below player (higher center Y) should draw after player")
+    "wire below player (higher bottom Y) should draw after player")
 
--- Ordering between non-player entities should also respect center Y.
--- wire_above (216) < item_above... wait, item_above is 124 which is less.
--- So expected draw order: item_above(124), wire_above(216), player(768), wire_below(866), item_below(924)
+-- Ordering between non-player entities should also respect bottom Y.
+-- Expected draw order: item_above(148), wire_above(232), player(816), wire_below(882), item_below(948)
 assert(idx_item_above < idx_wire_above,
-    "item_above (center Y 124) should draw before wire_above (center Y 216)")
+    "item_above (bottom Y 148) should draw before wire_above (bottom Y 232)")
 assert(idx_wire_below < idx_item_below,
-    "wire_below (center Y 866) should draw before item_below (center Y 924)")
+    "wire_below (bottom Y 882) should draw before item_below (bottom Y 948)")
 
-print("PASS: Y-sort draws entities in ascending center-Y order")
+print("PASS: Y-sort draws entities in ascending bottom-edge Y order")
 print("ALL TESTS PASSED")
