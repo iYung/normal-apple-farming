@@ -79,11 +79,10 @@ function Breeder:update(dt)
     if self._breeding then
         self._sway_time = self._sway_time + dt
         if self._timer:update(dt) then
-            -- Breed
+            -- Breed: parents stay, timer resets, offspring is spawned
             local offspring_stats = AnimalStats.breed(self._slots[1], self._slots[2])
-            self._slots = {}
-            self._breeding = false
-            self._pending_offspring = offspring_stats
+            self._timer:reset(BREED_TIME)
+            self._sway_time = 0
             return offspring_stats
         end
     end
