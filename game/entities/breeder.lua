@@ -55,6 +55,16 @@ function Breeder:try_add(animal)
     return true
 end
 
+-- Removes and returns the last animal's stats; stops breeding if < 2 remain.
+function Breeder:try_eject()
+    if #self._slots == 0 then return nil end
+    local stats = table.remove(self._slots)
+    if #self._slots < 2 then
+        self._breeding = false
+    end
+    return stats
+end
+
 -- Returns bred offspring AnimalStats (call this when you want to take the result)
 function Breeder:take_offspring()
     if self._pending_offspring == nil then return nil end

@@ -3,6 +3,7 @@ local SpriteSet = require("core/lua/spriteset")
 local Input     = require("core/lua/input")
 local Mapper    = require("game/systems/mapper")
 local Detector  = require("game/systems/detector")
+local Animal    = require("game/entities/animal")
 
 local SPEED      = 180
 local ANIM_SPEED = 0.15  -- seconds per walk frame
@@ -188,9 +189,18 @@ function Player:_handle_interact(scene)
         end
         self.held_item = nil
     else
-        -- Pick up nearest entity
         if hovered then
-            self:_pick_up(hovered)
+            if hovered._type == "breeder" and not hovered:is_empty() then
+                -- Eject last animal from breeder into player's hands
+                local stats = hovered:try_eject()
+                if stats then
+                    local new_animal = Animal.new(hovered.x, hovered.y, stats)
+                    table.insert(scene.animals, new_animal)
+                    self:_pick_up(new_animal)
+                end
+            else
+                self:_pick_up(hovered)
+            end
         end
     end
 end
