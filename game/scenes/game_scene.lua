@@ -180,29 +180,31 @@ function GameScene:draw()
     end
     love.graphics.setColor(1, 1, 1, 1)
 
-    -- Wires
+    -- Y-sort: collect wires, non-held items, animals, and player into one list
+    -- sorted by center Y so entities lower on screen draw on top.
+    local entities = {}
     for _, w in ipairs(self.wires) do
-        w:draw()
+        table.insert(entities, w)
     end
-
-    -- Items
     for _, it in ipairs(self.items) do
         if not it.held then
-            it:draw()
+            table.insert(entities, it)
         end
     end
-
-    -- Animals
     for _, a in ipairs(self.animals) do
-        a:draw()
+        table.insert(entities, a)
     end
+    table.insert(entities, self.player)
 
-    -- Player
-    self.player:draw()
+    table.sort(entities, function(a, b)
+        return (a.y + a.h / 2) < (b.y + b.h / 2)
+    end)
 
-    -- Held item draws on top of player
-    if self.player.held_item then
-        self.player.held_item:draw()
+    for _, e in ipairs(entities) do
+        e:draw()
+        if e == self.player and self.player.held_item then
+            self.player.held_item:draw()
+        end
     end
 
     self.camera:detach()
