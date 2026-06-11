@@ -4,7 +4,8 @@ local Input     = require("core/lua/input")
 local Mapper    = require("game/systems/mapper")
 local Detector  = require("game/systems/detector")
 
-local SPEED = 180
+local SPEED      = 180
+local ANIM_SPEED = 0.15  -- seconds per walk frame
 
 local Player = {}
 Player.__index = Player
@@ -16,8 +17,10 @@ function Player.new(x, y)
     self.y         = y or 350
     self.w         = 96
     self.h         = 96
-    self.held_item = nil  -- the animal or item being carried
-    self._debounce = false  -- prevents repeated pickup on held E
+    self.held_item   = nil
+    self._debounce   = false
+    self._anim_timer = 0
+    self._anim_frame = 0
 
     self.input = Input.new({
         move_up    = { "w", "up" },
@@ -77,17 +80,24 @@ function Player:update(dt, scene)
         self._sprites.scale_x = 1
     end
 
-    -- Choose animation variant
+    -- Alternate walk frames while moving
     local moving = vx ~= 0 or vy ~= 0
-    local carrying = self.held_item ~= nil
-    if carrying and moving then
-        self._sprites:set("carry_walk")
-    elseif carrying then
-        self._sprites:set("carry_idle")
-    elseif moving then
-        self._sprites:set("walk")
+    if moving then
+        self._anim_timer = self._anim_timer + dt
+        if self._anim_timer >= ANIM_SPEED then
+            self._anim_timer = self._anim_timer - ANIM_SPEED
+            self._anim_frame = 1 - self._anim_frame
+        end
     else
-        self._sprites:set("idle")
+        self._anim_timer = 0
+        self._anim_frame = 0
+    end
+
+    local carrying = self.held_item ~= nil
+    if carrying then
+        self._sprites:set(self._anim_frame == 1 and "carry_walk" or "carry_idle")
+    else
+        self._sprites:set(self._anim_frame == 1 and "walk" or "idle")
     end
 
     -- Carry: center held item above player

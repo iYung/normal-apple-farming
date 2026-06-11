@@ -22,9 +22,11 @@ function Animal.new(x, y, stats)
     self.stats  = stats or AnimalStats.random()
     self.vx     = 0
     self.vy     = 0
-    self.held   = false
-    self.bounced = false
+    self.held        = false
+    self.bounced     = false
     self.highlighted = false
+    self._anim_timer = 0
+    self._anim_frame = 0
 
     -- Random initial wander interval 1–3 seconds
     self._wander_timer = Timer.new(1 + math.random() * 2)
@@ -123,9 +125,19 @@ function Animal:update(dt, wire_grid)
         self._face_sprite.scale_x  = 1
     end
 
-    -- Toggle which legs sprite is visible
-    self._legs_still.visible = not moving
-    self._legs_walk.visible  = moving
+    -- Alternate legs sprites while moving
+    if moving then
+        self._anim_timer = self._anim_timer + dt
+        if self._anim_timer >= 0.15 then
+            self._anim_timer = self._anim_timer - 0.15
+            self._anim_frame = 1 - self._anim_frame
+        end
+    else
+        self._anim_timer = 0
+        self._anim_frame = 0
+    end
+    self._legs_still.visible = self._anim_frame == 0
+    self._legs_walk.visible  = self._anim_frame == 1
 end
 
 function Animal:draw()
