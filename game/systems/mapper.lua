@@ -24,9 +24,12 @@ function Mapper.remove(grid, tx, ty)
     grid[Mapper.key(tx, ty)] = nil
 end
 
+Mapper.WORLD_W = 2560
+Mapper.WORLD_H = 1440
+
 function Mapper.clamp(x, y, w, h)
-    local cx = math.max(32, math.min(x, 1280 - w - 32))
-    local cy = math.max(32, math.min(y, 720 - h - 32))
+    local cx = math.max(32, math.min(x, Mapper.WORLD_W - w - 32))
+    local cy = math.max(32, math.min(y, Mapper.WORLD_H - h - 32))
     return cx, cy
 end
 

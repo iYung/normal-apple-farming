@@ -19,9 +19,10 @@ local JobInfo      = require("game/ui/job_info")
 local MoneyInfo    = require("game/ui/money_info")
 local ActionsInfo  = require("game/ui/actions_info")
 
-local ZOOM    = 1.3
-local WORLD_W = 1280
-local WORLD_H = 720
+local VIEW_W  = 1280
+local VIEW_H  = 720
+local WORLD_W = 2560
+local WORLD_H = 1440
 
 local GameScene = {}
 GameScene.__index = GameScene
@@ -30,7 +31,6 @@ function GameScene.new()
     local self = setmetatable({}, GameScene)
     self.drawer = Drawer.new()
     self.camera = Camera.new()
-    self.camera.zoom = ZOOM
     return self
 end
 
@@ -47,23 +47,25 @@ function GameScene:on_enter()
     self.breeder  = Breeder.new(200, 280)
     self.sell_bin = SellBin.new(900, 480)
 
-    -- Spawn 6 animals at random positions
+    -- Spawn 6 animals at random positions across the world
     self.game_state.animal_population = 6
     for i = 1, 6 do
-        local x = 200 + math.random(0, 860)
-        local y = 150 + math.random(0, 400)
+        local x = 200 + math.random(0, WORLD_W - 400)
+        local y = 150 + math.random(0, WORLD_H - 300)
         table.insert(self.animals, Animal.new(x, y))
     end
 
-    -- Starting items placed near centre
-    table.insert(self.items, Roll.new(580, 380))
-    table.insert(self.items, Knife.new(660, 380))
-    table.insert(self.items, Pruner.new(740, 380))
+    -- Starting items placed near world centre
+    local cx, cy = WORLD_W / 2, WORLD_H / 2
+    table.insert(self.items, Roll.new(cx - 60, cy))
+    table.insert(self.items, Knife.new(cx,      cy))
+    table.insert(self.items, Pruner.new(cx + 60, cy))
 
-    -- Player
-    self.player = Player.new(620, 330)
-    self.camera.x = 620 + 48  -- snap camera to player on load, no pan-in
-    self.camera.y = 330 + 48
+    -- Player starts at world centre
+    local px, py = WORLD_W / 2, WORLD_H / 2
+    self.player = Player.new(px, py)
+    self.camera.x = px + 48  -- snap camera to player on load, no pan-in
+    self.camera.y = py + 48
 
     -- Systems
     self.job_generator = JobGenerator.new(self.game_state)
@@ -76,13 +78,12 @@ function GameScene:on_enter()
     self.money_info  = MoneyInfo.new(self.game_state)
     self.actions_info = ActionsInfo.new()
 
-    -- Background tileset sprite (tiled across screen)
-    self._bg = Sprite.new(0, 0, 1280, 720)
+    -- Background tileset sprite (tiled across full world)
     if love.filesystem.getInfo("assets/images/tileset.png") then
         local img = love.graphics.newImage("assets/images/tileset.png")
         img:setWrap("repeat", "repeat")
         local tile = img:getWidth()
-        local quad = love.graphics.newQuad(0, 0, 1280, 720, tile, tile)
+        local quad = love.graphics.newQuad(0, 0, WORLD_W, WORLD_H, tile, tile)
         self._bg_img  = img
         self._bg_quad = quad
     end
@@ -99,10 +100,10 @@ function GameScene:update(dt)
     -- Player update (passes self as scene)
     self.player:update(dt, self)
 
-    -- Camera: follow player, clamp to world edges
+    -- Camera: follow player, clamp so viewport never shows outside world
     self.camera:follow(self.player:centre(), 0.08)
-    local half_vw = WORLD_W / (2 * ZOOM)
-    local half_vh = WORLD_H / (2 * ZOOM)
+    local half_vw = VIEW_W / 2
+    local half_vh = VIEW_H / 2
     self.camera.x = math.max(half_vw, math.min(self.camera.x, WORLD_W - half_vw))
     self.camera.y = math.max(half_vh, math.min(self.camera.y, WORLD_H - half_vh))
 
@@ -191,36 +192,22 @@ function GameScene:draw()
         w:draw()
     end
 
-    -- Items (including held ones — held item stays in world space at zoom)
+    -- Items
     for _, it in ipairs(self.items) do
-        if not it.held then
-            it:draw()
-        end
-    end
-    if self.player.held_item and self.player.held_item._type ~= "animal" then
-        self.player.held_item:draw()
+        it:draw()
     end
 
     -- Animals
     for _, a in ipairs(self.animals) do
-        if not a.held then
-            a:draw()
-        end
+        a:draw()
     end
-    if self.player.held_item and self.player.held_item._type == "animal" then
-        self.player.held_item:draw()
-    end
+
+    -- Player
+    self.player:draw()
 
     self.camera:detach()
 
-    -- Player drawn without zoom so its pixel size is independent of ZOOM
-    love.graphics.push()
-    love.graphics.translate(1280 / 2, 720 / 2)
-    love.graphics.translate(-self.camera.x, -self.camera.y)
-    self.player:draw()
-    love.graphics.pop()
-
-    -- HUD: screen space, unaffected by camera zoom
+    -- HUD: screen space, unaffected by camera
     self.animal_info:draw()
     self.money_info:draw()
     self.job_info:draw()
