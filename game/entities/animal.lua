@@ -173,12 +173,11 @@ function Animal:draw()
         OutlineShader.clear()
     end
 
-    -- Normal pass: legs, tinted body segments (bottom to top), face
-    if self._legs_still.visible then self._legs_still:draw() end
-    if self._legs_walk.visible  then self._legs_walk:draw()  end
-
+    -- Normal pass: legs and body tinted, face on top
     AnimalColorShader.apply(self._color_shader,
         self.stats.color.r, self.stats.color.g, self.stats.color.b)
+    if self._legs_still.visible then self._legs_still:draw() end
+    if self._legs_walk.visible  then self._legs_walk:draw()  end
     for _, bs in ipairs(self._body_sprites) do bs:draw() end
     AnimalColorShader.clear()
 
