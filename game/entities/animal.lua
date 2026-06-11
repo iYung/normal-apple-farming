@@ -17,8 +17,8 @@ function Animal.new(x, y, stats)
     self._type  = "animal"
     self.x      = x or 300
     self.y      = y or 300
-    self.w      = 32
-    self.h      = 40  -- body + legs combined height
+    self.w      = 48
+    self.h      = 48
     self.stats  = stats or AnimalStats.random()
     self.vx     = 0
     self.vy     = 0
@@ -33,14 +33,14 @@ function Animal.new(x, y, stats)
     self._color_shader   = AnimalColorShader.new()
     self._outline_shader = OutlineShader.new()
 
-    -- Body sprite (32×32)
-    self._body_sprite = Sprite.new(0, 0, 32, 32)
+    -- Body sprite (48×48)
+    self._body_sprite = Sprite.new(0, 0, 48, 48)
     self._body_sprite.image = love.graphics.newImage("assets/images/animal/animal_body.png")
 
-    -- Legs sprites (32×16 each); visibility toggled based on movement
-    self._legs_still = Sprite.new(0, 0, 32, 16)
+    -- Legs sprites (48×48 each); visibility toggled based on movement
+    self._legs_still = Sprite.new(0, 0, 48, 48)
     self._legs_still.image = love.graphics.newImage("assets/images/animal/animal_legs_still.png")
-    self._legs_walk  = Sprite.new(0, 0, 32, 16)
+    self._legs_walk  = Sprite.new(0, 0, 48, 48)
     self._legs_walk.image  = love.graphics.newImage("assets/images/animal/animal_legs_walk.png")
 
     -- Preload all face images keyed by personality to avoid per-frame disk reads
@@ -49,8 +49,8 @@ function Animal.new(x, y, stats)
         self._face_images[p] = love.graphics.newImage(AnimalStats.personality_to_face(p))
     end
 
-    -- Face sprite (32×32); image swapped from the preloaded table
-    self._face_sprite = Sprite.new(0, 0, 32, 32)
+    -- Face sprite (48×48); image swapped from the preloaded table
+    self._face_sprite = Sprite.new(0, 0, 48, 48)
     self._face_sprite.image = self._face_images[self.stats.personality]
 
     return self
@@ -133,14 +133,14 @@ function Animal:draw()
 
     -- Apply outline shader around the whole animal when highlighted
     if self.highlighted then
-        OutlineShader.apply(self._outline_shader, 1, 0.9, 0)
+        OutlineShader.apply(self._outline_shader, 1, 0.9, 0, 48, 48)
     end
 
-    -- Legs sit below the body (offset 26px down from body origin)
+    -- Legs drawn at same origin as body (48×48 sprite includes leg position)
     self._legs_still.x = bx
-    self._legs_still.y = by + 26
+    self._legs_still.y = by
     self._legs_walk.x  = bx
-    self._legs_walk.y  = by + 26
+    self._legs_walk.y  = by
 
     if self._legs_still.visible then self._legs_still:draw() end
     if self._legs_walk.visible  then self._legs_walk:draw()  end
@@ -153,9 +153,9 @@ function Animal:draw()
     self._body_sprite:draw()
     AnimalColorShader.clear()
 
-    -- Face drawn on top of body (2px upward nudge matches Godot original)
+    -- Face drawn on top of body (same origin, face PNG has correct offset baked in)
     self._face_sprite.x = bx
-    self._face_sprite.y = by - 2
+    self._face_sprite.y = by
     self._face_sprite:draw()
 
     if self.highlighted then

@@ -14,8 +14,8 @@ function Player.new(x, y)
     self._type     = "player"
     self.x         = x or 600
     self.y         = y or 350
-    self.w         = 32
-    self.h         = 48
+    self.w         = 96
+    self.h         = 96
     self.held_item = nil  -- the animal or item being carried
     self._debounce = false  -- prevents repeated pickup on held E
 
@@ -32,7 +32,7 @@ function Player.new(x, y)
     -- Load sprites into a SpriteSet
     self._sprites = SpriteSet.new()
     local function mk(path)
-        local s = Sprite.new(0, 0, 32, 48)
+        local s = Sprite.new(0, 0, 96, 96)
         s.image = love.graphics.newImage(path)
         return s
     end
@@ -47,7 +47,7 @@ end
 
 -- Centre point (for camera tracking etc.)
 function Player:centre()
-    return { x = self.x + self.w / 2, y = self.y + self.h / 2 }
+    return { x = self.x + 48, y = self.y + 48 }
 end
 
 function Player:update(dt, scene)
@@ -93,7 +93,7 @@ function Player:update(dt, scene)
     -- Carry: position held item above player
     if self.held_item then
         self.held_item.x = self.x
-        self.held_item.y = self.y - 40
+        self.held_item.y = self.y - 48
     end
 
     -- Interact (E): press once, debounce

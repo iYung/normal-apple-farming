@@ -62,8 +62,8 @@ function GameScene:on_enter()
 
     -- Player
     self.player = Player.new(620, 330)
-    self.camera.x = 620 + 16  -- snap camera to player on load, no pan-in
-    self.camera.y = 330 + 24
+    self.camera.x = 620 + 48  -- snap camera to player on load, no pan-in
+    self.camera.y = 330 + 48
 
     -- Systems
     self.job_generator = JobGenerator.new(self.game_state)
