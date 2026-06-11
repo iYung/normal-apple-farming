@@ -19,7 +19,7 @@ local JobInfo      = require("game/ui/job_info")
 local MoneyInfo    = require("game/ui/money_info")
 local ActionsInfo  = require("game/ui/actions_info")
 
-local ZOOM    = 2
+local ZOOM    = 1.3
 local WORLD_W = 1280
 local WORLD_H = 720
 
@@ -205,13 +205,18 @@ function GameScene:draw()
         end
     end
 
-    -- Held item and player
+    self.camera:detach()
+
+    -- Player and held item drawn without zoom: translate to world position
+    -- at scale 1 so their pixel size stays the same regardless of ZOOM
+    love.graphics.push()
+    love.graphics.translate(1280 / 2, 720 / 2)
+    love.graphics.translate(-self.camera.x, -self.camera.y)
     if self.player.held_item then
         self.player.held_item:draw()
     end
     self.player:draw()
-
-    self.camera:detach()
+    love.graphics.pop()
 
     -- HUD: screen space, unaffected by camera zoom
     self.animal_info:draw()
