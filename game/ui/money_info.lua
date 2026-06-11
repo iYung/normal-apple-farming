@@ -9,7 +9,7 @@ end
 
 function MoneyInfo:draw()
     local x, y = 16, 120   -- below the animal_info panel (which is at y=16, h=90)
-    local w, h = 160, 50
+    local w, h = 160, 32
 
     -- Background
     love.graphics.setColor(0.1, 0.1, 0.15, 0.85)
@@ -19,9 +19,6 @@ function MoneyInfo:draw()
 
     love.graphics.setColor(0.9, 0.85, 0.2, 1)
     love.graphics.print("$" .. self._state.money, x + 8, y + 8)
-
-    love.graphics.setColor(0.7, 0.9, 1, 1)
-    love.graphics.print("Wires: " .. self._state.wires, x + 8, y + 26)
 
     love.graphics.setColor(1, 1, 1, 1)
 end
