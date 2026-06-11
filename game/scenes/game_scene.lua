@@ -187,7 +187,9 @@ function GameScene:draw()
 
     -- Items
     for _, it in ipairs(self.items) do
-        it:draw()
+        if not it.held then
+            it:draw()
+        end
     end
 
     -- Animals
@@ -197,6 +199,11 @@ function GameScene:draw()
 
     -- Player
     self.player:draw()
+
+    -- Held item draws on top of player
+    if self.player.held_item then
+        self.player.held_item:draw()
+    end
 
     self.camera:detach()
 
