@@ -10,7 +10,6 @@ local SellBin      = require("game/entities/sell_bin")
 local Wire         = require("game/entities/wire")
 local Roll         = require("game/items/roll")
 local Knife        = require("game/items/knife")
-local Pruner       = require("game/items/pruner")
 local JobGenerator = require("game/systems/job_generator")
 local Detector     = require("game/systems/detector")
 local ShopUI       = require("game/scenes/shop_ui")
@@ -61,7 +60,6 @@ function GameScene:on_enter()
     local cx, cy = WORLD_W / 2, WORLD_H / 2
     table.insert(self.items, Roll.new(cx - 60, cy + 120))
     table.insert(self.items, Knife.new(cx,      cy + 120))
-    table.insert(self.items, Pruner.new(cx + 60, cy + 120))
 
     -- Player starts at world centre
     local px, py = WORLD_W / 2, WORLD_H / 2
