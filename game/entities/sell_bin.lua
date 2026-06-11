@@ -1,5 +1,6 @@
-local Sprite  = require("core/lua/sprite")
-local JobData = require("game/data/job")
+local Sprite        = require("core/lua/sprite")
+local JobData       = require("game/data/job")
+local OutlineShader = require("game/shaders/outline")
 
 local SellBin = {}
 SellBin.__index = SellBin
@@ -11,9 +12,11 @@ function SellBin.new(x, y)
     self.y        = y
     self.w        = 96
     self.h        = 96
-    self.held     = false
-    self.carriable = true
-    self.sprite   = Sprite.new(x, y, 96, 96)
+    self.held            = false
+    self.carriable       = true
+    self.highlighted     = false
+    self._outline_shader = OutlineShader.new()
+    self.sprite          = Sprite.new(x, y, 96, 96)
     self.sprite.image = love.graphics.newImage("assets/images/sell_bin/sell_bin.png")
     return self
 end
@@ -48,7 +51,16 @@ function SellBin:update(dt)
 end
 
 function SellBin:draw()
+    if self.highlighted then
+        OutlineShader.apply(self._outline_shader, 1, 0.9, 0, 96, 96)
+        self.sprite:draw()
+        OutlineShader.clear()
+    end
     self.sprite:draw()
+end
+
+function SellBin:highlight(on)
+    self.highlighted = on
 end
 
 return SellBin

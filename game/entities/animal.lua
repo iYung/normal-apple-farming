@@ -144,36 +144,33 @@ function Animal:draw()
     local bx = self.x
     local by = self.y
 
-    -- Apply outline shader around the whole animal when highlighted
+    -- Sync all positions first
+    self._legs_still.x = bx; self._legs_still.y = by
+    self._legs_walk.x  = bx; self._legs_walk.y  = by
+    self._body_sprite.x = bx; self._body_sprite.y = by
+    self._face_sprite.x = bx; self._face_sprite.y = by
+
+    -- Outline pass: draw all parts with outline shader so border surrounds the whole animal.
+    -- These pixels land in the transparent border area and survive the normal pass below.
     if self.highlighted then
         OutlineShader.apply(self._outline_shader, 1, 0.9, 0, 48, 48)
+        if self._legs_still.visible then self._legs_still:draw() end
+        if self._legs_walk.visible  then self._legs_walk:draw()  end
+        self._body_sprite:draw()
+        self._face_sprite:draw()
+        OutlineShader.clear()
     end
 
-    -- Legs drawn at same origin as body (48×48 sprite includes leg position)
-    self._legs_still.x = bx
-    self._legs_still.y = by
-    self._legs_walk.x  = bx
-    self._legs_walk.y  = by
-
+    -- Normal pass
     if self._legs_still.visible then self._legs_still:draw() end
     if self._legs_walk.visible  then self._legs_walk:draw()  end
 
-    -- Body with color shader applied
     AnimalColorShader.apply(self._color_shader,
         self.stats.color.r, self.stats.color.g, self.stats.color.b)
-    self._body_sprite.x = bx
-    self._body_sprite.y = by
     self._body_sprite:draw()
     AnimalColorShader.clear()
 
-    -- Face drawn on top of body (same origin, face PNG has correct offset baked in)
-    self._face_sprite.x = bx
-    self._face_sprite.y = by
     self._face_sprite:draw()
-
-    if self.highlighted then
-        OutlineShader.clear()
-    end
 end
 
 function Animal:highlight(on)

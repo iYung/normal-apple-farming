@@ -121,14 +121,15 @@ function Player:update(dt, scene)
         scene.shop_open = not scene.shop_open
     end
 
-    -- Highlight nearest hoverable animal
+    -- Highlight nearest pickupable entity
     for _, a in ipairs(scene.animals) do a:highlight(false) end
+    for _, it in ipairs(scene.items)  do it:highlight(false) end
     if not self.held_item then
         local all = {}
         for _, a in ipairs(scene.animals) do table.insert(all, a) end
         for _, it in ipairs(scene.items)  do table.insert(all, it) end
         local near = Detector.nearest(self, all, 64)
-        if near and Detector.is_animal(near) then near:highlight(true) end
+        if near then near:highlight(true) end
     end
 end
 

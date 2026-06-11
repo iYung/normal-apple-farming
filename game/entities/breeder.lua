@@ -1,7 +1,8 @@
-local Sprite      = require("core/lua/sprite")
-local Timer       = require("core/lua/timer")
-local AnimalStats = require("game/data/animal_stats")
-local SwayShader  = require("game/shaders/sway")
+local Sprite        = require("core/lua/sprite")
+local Timer         = require("core/lua/timer")
+local AnimalStats   = require("game/data/animal_stats")
+local SwayShader    = require("game/shaders/sway")
+local OutlineShader = require("game/shaders/outline")
 
 local BREED_TIME = 5.0  -- seconds
 
@@ -15,13 +16,15 @@ function Breeder.new(x, y)
     self.y        = y
     self.w        = 96
     self.h        = 96
-    self.held     = false
-    self.carriable = true
-    self._slots   = {}   -- array of AnimalStats (up to 2)
+    self.held        = false
+    self.carriable   = true
+    self.highlighted = false
+    self._slots      = {}   -- array of AnimalStats (up to 2)
     self._breeding = false
     self._timer   = Timer.new(BREED_TIME)
     self._sway_time = 0
-    self._sway_shader = SwayShader.new()
+    self._sway_shader    = SwayShader.new()
+    self._outline_shader = OutlineShader.new()
     self._pending_offspring = nil  -- set to a newly spawned Animal after breeding
 
     -- Load sprites
@@ -112,6 +115,13 @@ function Breeder:draw()
         body = self._sprite_two
     end
 
+    -- Outline pass when highlighted
+    if self.highlighted then
+        OutlineShader.apply(self._outline_shader, 1, 0.9, 0, 96, 96)
+        body:draw()
+        OutlineShader.clear()
+    end
+
     -- Apply sway shader when breeding
     if self._breeding then
         SwayShader.apply(self._sway_shader, self._sway_time)
@@ -127,6 +137,10 @@ function Breeder:draw()
         self._bar_fill.scale_x = progress
         self._bar_fill:draw()
     end
+end
+
+function Breeder:highlight(on)
+    self.highlighted = on
 end
 
 return Breeder

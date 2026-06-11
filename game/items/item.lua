@@ -1,4 +1,5 @@
-local Sprite = require("core/lua/sprite")
+local Sprite        = require("core/lua/sprite")
+local OutlineShader = require("game/shaders/outline")
 
 local Item = {}
 Item.__index = Item
@@ -8,15 +9,17 @@ Item.__index = Item
 -- w, h: pixel size (optional, defaults 32x32)
 function Item.new(x, y, name, image_path, w, h)
     local self = setmetatable({}, Item)
-    self._type    = "item"
-    self.x        = x or 0
-    self.y        = y or 0
-    self.w        = w or 32
-    self.h        = h or 32
-    self.name     = name or "Item"
-    self.carriable = true
-    self.held     = false
-    self.sprite   = Sprite.new(x, y, self.w, self.h)
+    self._type          = "item"
+    self.x              = x or 0
+    self.y              = y or 0
+    self.w              = w or 32
+    self.h              = h or 32
+    self.name           = name or "Item"
+    self.carriable      = true
+    self.held           = false
+    self.highlighted    = false
+    self._outline_shader = OutlineShader.new()
+    self.sprite         = Sprite.new(x, y, self.w, self.h)
     if image_path then
         self.sprite.image = love.graphics.newImage(image_path)
     end
@@ -29,7 +32,16 @@ function Item:update(dt)
 end
 
 function Item:draw()
+    if self.highlighted then
+        OutlineShader.apply(self._outline_shader, 1, 0.9, 0, self.w, self.h)
+        self.sprite:draw()
+        OutlineShader.clear()
+    end
     self.sprite:draw()
+end
+
+function Item:highlight(on)
+    self.highlighted = on
 end
 
 -- Override in subclasses for pickup interaction
