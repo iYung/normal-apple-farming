@@ -1,14 +1,16 @@
-local Roll   = require("game/items/roll")
-local Knife  = require("game/items/knife")
-local Pruner = require("game/items/pruner")
+local Roll    = require("game/items/roll")
+local Knife   = require("game/items/knife")
+local Pruner  = require("game/items/pruner")
+local Breeder = require("game/entities/breeder")
 
-local SHOP_W, SHOP_H = 400, 260
+local SHOP_W, SHOP_H = 500, 260
 local LOGICAL_W, LOGICAL_H = 1280, 720
 
 local CATALOG = {
-    { name = "Wire Roll", cost = 20, constructor = Roll.new,   desc = "Place wire fencing to redirect animals." },
-    { name = "Knife",     cost = 40, constructor = Knife.new,  desc = "Remove wire fencing within reach."       },
-    { name = "Pruner",    cost = 15, constructor = Pruner.new, desc = "Decorative tool."                        },
+    { name = "Wire Roll", cost = 20,  constructor = Roll.new,    desc = "Place wire fencing to redirect animals." },
+    { name = "Knife",     cost = 40,  constructor = Knife.new,   desc = "Remove wire fencing within reach."       },
+    { name = "Pruner",    cost = 15,  constructor = Pruner.new,  desc = "Decorative tool."                        },
+    { name = "Breeder",   cost = 100, constructor = Breeder.new, desc = "Place two animals inside to breed."      },
 }
 
 local ShopUI = {}

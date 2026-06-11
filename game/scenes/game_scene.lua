@@ -43,9 +43,11 @@ function GameScene:on_enter()
     self.wires     = {}
     self.wire_grid = {}  -- Mapper-key → Wire table
 
-    -- Static fixtures
-    self.breeder  = Breeder.new(200, 280)
-    self.sell_bin = SellBin.new(900, 480)
+    -- Fixtures (pickupable, live in items list)
+    local bx, by = WORLD_W / 2 - 300, WORLD_H / 2
+    local sx, sy = WORLD_W / 2 + 200, WORLD_H / 2
+    table.insert(self.items, Breeder.new(bx, by))
+    table.insert(self.items, SellBin.new(sx, sy))
 
     -- Spawn 6 animals at random positions across the world
     self.game_state.animal_population = 6
@@ -57,9 +59,9 @@ function GameScene:on_enter()
 
     -- Starting items placed near world centre
     local cx, cy = WORLD_W / 2, WORLD_H / 2
-    table.insert(self.items, Roll.new(cx - 60, cy))
-    table.insert(self.items, Knife.new(cx,      cy))
-    table.insert(self.items, Pruner.new(cx + 60, cy))
+    table.insert(self.items, Roll.new(cx - 60, cy + 120))
+    table.insert(self.items, Knife.new(cx,      cy + 120))
+    table.insert(self.items, Pruner.new(cx + 60, cy + 120))
 
     -- Player starts at world centre
     local px, py = WORLD_W / 2, WORLD_H / 2
@@ -112,19 +114,16 @@ function GameScene:update(dt)
         a:update(dt, self.wire_grid)
     end
 
-    -- Breeder: check for completed offspring
-    local offspring_stats = self.breeder:update(dt)
-    if offspring_stats then
-        local ox = self.breeder.x + math.random(-32, 64)
-        local oy = self.breeder.y + self.breeder.h + 8
-        local new_animal = Animal.new(ox, oy, offspring_stats)
-        table.insert(self.animals, new_animal)
-        self.game_state.animal_population = self.game_state.animal_population + 1
-    end
-
-    -- Items
+    -- Items (breeders return offspring_stats when breeding completes)
     for _, it in ipairs(self.items) do
-        it:update(dt)
+        local result = it:update(dt)
+        if result and it._type == "breeder" then
+            local ox = it.x + math.random(-32, 64)
+            local oy = it.y + it.h + 8
+            local new_animal = Animal.new(ox, oy, result)
+            table.insert(self.animals, new_animal)
+            self.game_state.animal_population = self.game_state.animal_population + 1
+        end
     end
 
     -- Shop overlay
@@ -182,10 +181,6 @@ function GameScene:draw()
         love.graphics.draw(self._bg_img, self._bg_quad, 0, 0)
     end
     love.graphics.setColor(1, 1, 1, 1)
-
-    -- Static fixtures
-    self.breeder:draw()
-    self.sell_bin:draw()
 
     -- Wires
     for _, w in ipairs(self.wires) do

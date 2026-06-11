@@ -90,10 +90,10 @@ function Player:update(dt, scene)
         self._sprites:set("idle")
     end
 
-    -- Carry: position held item above player
+    -- Carry: center held item above player
     if self.held_item then
-        self.held_item.x = self.x
-        self.held_item.y = self.y - 48
+        self.held_item.x = self.x + (self.w - self.held_item.w) / 2
+        self.held_item.y = self.y - self.held_item.h
     end
 
     -- Interact (E): press once, debounce
@@ -133,34 +133,38 @@ function Player:_handle_interact(scene)
     local hovered = Detector.nearest(self, all_entities, 64)
 
     if held then
-        -- Try to drop into breeder
-        if Detector.is_animal(held) and Detector.aabb(self, scene.breeder) then
-            if scene.breeder:try_add(held) then
-                -- Remove from animals list
-                for i = #scene.animals, 1, -1 do
-                    if scene.animals[i] == held then
-                        table.remove(scene.animals, i)
-                        break
+        if Detector.is_animal(held) then
+            -- Try to drop into any nearby breeder
+            for _, it in ipairs(scene.items) do
+                if it._type == "breeder" and not it.held and Detector.aabb(self, it) then
+                    if it:try_add(held) then
+                        for i = #scene.animals, 1, -1 do
+                            if scene.animals[i] == held then
+                                table.remove(scene.animals, i)
+                                break
+                            end
+                        end
+                        self.held_item = nil
+                        return
                     end
                 end
-                self.held_item = nil
-                return
             end
-        end
 
-        -- Try to sell at sell bin
-        if Detector.is_animal(held) and Detector.aabb(self, scene.sell_bin) then
-            local reward = scene.sell_bin:try_sell(held, scene.game_state)
-            if reward > 0 then
-                -- Remove from animals list
-                for i = #scene.animals, 1, -1 do
-                    if scene.animals[i] == held then
-                        table.remove(scene.animals, i)
-                        break
+            -- Try to sell at any nearby sell bin
+            for _, it in ipairs(scene.items) do
+                if it._type == "sell_bin" and not it.held and Detector.aabb(self, it) then
+                    local reward = it:try_sell(held, scene.game_state)
+                    if reward > 0 then
+                        for i = #scene.animals, 1, -1 do
+                            if scene.animals[i] == held then
+                                table.remove(scene.animals, i)
+                                break
+                            end
+                        end
+                        self.held_item = nil
+                        return
                     end
                 end
-                self.held_item = nil
-                return
             end
         end
 

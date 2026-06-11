@@ -13,8 +13,10 @@ function Breeder.new(x, y)
     self._type    = "breeder"
     self.x        = x
     self.y        = y
-    self.w        = 96   -- 3 tiles wide
-    self.h        = 96   -- 3 tiles tall
+    self.w        = 96
+    self.h        = 96
+    self.held     = false
+    self.carriable = true
     self._slots   = {}   -- array of AnimalStats (up to 2)
     self._breeding = false
     self._timer   = Timer.new(BREED_TIME)
@@ -89,10 +91,15 @@ function Breeder:update(dt)
 end
 
 function Breeder:draw()
+    -- Sync sprite positions to current entity position
+    self._sprite_empty.x = self.x; self._sprite_empty.y = self.y
+    self._sprite_one.x   = self.x; self._sprite_one.y   = self.y
+    self._sprite_two.x   = self.x; self._sprite_two.y   = self.y
+    self._bar_back.x     = self.x; self._bar_back.y     = self.y + 88
+    self._bar_fill.x     = self.x; self._bar_fill.y     = self.y + 88
+
     local progress = 0
     if self._breeding then
-        -- _timer._t counts up from 0; interval is BREED_TIME
-        -- fraction = _t / interval
         progress = self._timer._t / self._timer.interval
     end
 

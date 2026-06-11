@@ -6,12 +6,14 @@ SellBin.__index = SellBin
 
 function SellBin.new(x, y)
     local self = setmetatable({}, SellBin)
-    self._type = "sell_bin"
-    self.x     = x
-    self.y     = y
-    self.w     = 96
-    self.h     = 96
-    self.sprite = Sprite.new(x, y, 96, 96)
+    self._type    = "sell_bin"
+    self.x        = x
+    self.y        = y
+    self.w        = 96
+    self.h        = 96
+    self.held     = false
+    self.carriable = true
+    self.sprite   = Sprite.new(x, y, 96, 96)
     self.sprite.image = love.graphics.newImage("assets/images/sell_bin/sell_bin.png")
     return self
 end
@@ -38,6 +40,11 @@ function SellBin:try_sell(animal, game_state)
     game_state.money = game_state.money + 1
     game_state.animal_population = game_state.animal_population - 1
     return 1
+end
+
+function SellBin:update(dt)
+    self.sprite.x = self.x
+    self.sprite.y = self.y
 end
 
 function SellBin:draw()
