@@ -4,7 +4,6 @@ GameState.__index = GameState
 function GameState.new()
     local self = setmetatable({}, GameState)
     self.money          = 0       -- current money balance
-    self.wires          = 5       -- wire inventory (Roll items place these)
     self.jobs_done      = 0       -- total jobs completed (drives job generator unlocks)
     self.active_jobs    = {}      -- array of Job tables (max 4 at once)
     self.animal_population = 2    -- tracks living animals (must stay > 2 to sell)
