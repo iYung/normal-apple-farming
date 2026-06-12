@@ -20,6 +20,9 @@ Animals have four heritable traits: **speed**, **color** (RGB), **height**, and 
 | WASD / Arrow keys | Move player |
 | E | Pick up / drop animal or item; interact with Shop item to open buy menu; purchase in shop |
 | O (hold) | Use held item (place wire with Roll, remove wire with Knife) |
+| ESC | Open / close settings menu |
+
+Controls can be rebound in the settings menu. Settings (keybinds, fullscreen) persist between sessions.
 
 ## How to run
 
@@ -34,17 +37,19 @@ Requires [Love2D](https://love2d.org/) 11.x or later.
 
 ```
 core/lua/           Engine classes — Camera, Drawer, Input, Scene,
-                    SceneManager, Sprite, SpriteSet, Timer, Fonts
+                    SceneManager, Sprite, SpriteSet, Timer, Fonts, Save
 game/
   data/             AnimalStats, Job/Goal data classes
   entities/         Animal, Player, Breeder, SellBin, Wire
   items/            Item base class, Roll, Knife, ShopItem
-  scenes/           GameScene (main), ShopScene (buy menu)
+  scenes/           GameScene (main), ShopScene (buy menu), SettingsMenu (overlay)
   shaders/          AnimalColor, Outline, Sway, CRT GLSL shaders
   systems/          Mapper (tile grid), Detector (type/AABB helpers), JobGenerator
   ui/               AnimalInfo, JobInfo, MoneyInfo, ActionsInfo HUD panels
   ui.lua            Shared HUD utilities (currency bubble, hints box)
+  fonts.lua         Font factory wrapper (binds assets/font.ttf)
   game_state.lua    Global state (money, wires, jobs)
+  settings_state.lua  Fullscreen and keybind settings; serialises to settings.dat
 lua/headless/       Headless stubs and test runner
 tests/              Unit tests (run with: love . --headless)
 assets/             Images — animal sprites, player, items, tileset, hud/

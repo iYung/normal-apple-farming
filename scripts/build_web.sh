@@ -36,7 +36,7 @@ hook = (
     '(function(){'
       'var _t=null;'
       'function _sync(p){'
-        'if(p&&p.indexOf("save.dat")!==-1){'
+        'if(p&&(p.indexOf("save.dat")!==-1||p.indexOf("settings.dat")!==-1)){'
           'clearTimeout(_t);'
           '_t=setTimeout(function(){'
             'FS.syncfs(false,function(e){if(e)console.warn("[save] IDBFS sync error:",e);});'

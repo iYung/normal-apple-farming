@@ -1,5 +1,6 @@
 local Drawer       = require("core/lua/drawer")
 local Camera       = require("core/lua/camera")
+local Input        = require("core/lua/input")
 
 local GameState    = require("game/game_state")
 local Animal       = require("game/entities/animal")
@@ -74,7 +75,15 @@ function GameScene:on_enter()
 
     -- Player
     local px, py = WORLD_W / 2, WORLD_H / 2
-    self.player = Player.new(px, py)
+    self.input = Input.new({
+        move_up    = { "w", "up" },
+        move_down  = { "s", "down" },
+        move_left  = { "a", "left" },
+        move_right = { "d", "right" },
+        interact   = { "e" },
+        secondary  = { "o" },
+    })
+    self.player = Player.new(px, py, self.input)
     self.camera.x = px + 48
     self.camera.y = py + 48
 
