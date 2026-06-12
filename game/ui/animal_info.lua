@@ -17,11 +17,11 @@ function AnimalInfo:set(animal_or_nil)
     self._animal = animal_or_nil
 end
 
-function AnimalInfo:draw(camera)
+function AnimalInfo:draw(camera, player)
     if not self._animal then return end
     local stats = self._animal.stats
-    local x = (self._animal.x + 24 - camera.x) * camera.zoom + 640 - 80
-    local y = (self._animal.y - camera.y) * camera.zoom + 360 - 90 - 48
+    local x = (player.x + 48 - camera.x) * camera.zoom + 640 - 80
+    local y = (player.y + 96 - camera.y) * camera.zoom + 360 + 8
     x = math.max(0, math.min(x, 1280 - 160))
     y = math.max(0, math.min(y, 720 - 90))
     local w, h = 160, 90
