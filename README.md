@@ -40,9 +40,10 @@ game/
   entities/         Animal, Player, Breeder, SellBin, Wire
   items/            Item base class, Roll, Knife, ShopItem
   scenes/           GameScene (main), ShopScene (buy menu)
-  shaders/          AnimalColor, Outline, Sway GLSL shaders
+  shaders/          AnimalColor, Outline, Sway, CRT GLSL shaders
   systems/          Mapper (tile grid), Detector (type/AABB helpers), JobGenerator
   ui/               AnimalInfo, JobInfo, MoneyInfo, ActionsInfo HUD panels
+  ui.lua            Shared HUD utilities (currency bubble, hints box)
   game_state.lua    Global state (money, wires, jobs)
 lua/headless/       Headless stubs and test runner
 tests/              Unit tests (run with: love . --headless)
@@ -68,5 +69,5 @@ To enable deploys, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as Git
 - **Scene transitions** — `SceneManager` fades through black (0.3 s) between scene switches.
 - **Headless tests** — `lua/headless/stubs.lua` installs no-op love API replacements so test files run without a window. `HeadlessInput` lets tests script action presses frame-by-frame. See `tests/test_basics.lua` for a minimal example.
 - **Tile grid** — `Mapper` tracks wire placement on a 32 px tile grid; animals bounce off wire tiles each frame.
-- **Shader pipeline** — animals are drawn with a skin-color shader (replaces pure-red pixels with the animal's `stats.color`); highlighted animals get an outline glow shader; the Breeder sways while breeding.
+- **Shader pipeline** — animals are drawn with a skin-color shader (replaces pure-red pixels with the animal's `stats.color`); highlighted animals get an outline glow shader; the Breeder sways while breeding. The shop scene renders to an off-screen canvas and blits through a CRT post-process shader (`game/shaders/crt.lua`).
 - **Y-sort** — all world entities (wires, ground items, animals, player) are collected into one list each frame and sorted by bottom edge Y (`y + h`) before drawing, so entities lower on screen naturally appear in front of those higher up. The held item is drawn immediately after the player in the sorted pass so it stays on top of the player sprite.
