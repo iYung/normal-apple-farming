@@ -17,10 +17,13 @@ function AnimalInfo:set(animal_or_nil)
     self._animal = animal_or_nil
 end
 
-function AnimalInfo:draw()
+function AnimalInfo:draw(camera, player)
     if not self._animal then return end
     local stats = self._animal.stats
-    local x, y = 16, 16
+    local x = (player.x + 48 - camera.x) * camera.zoom + 640 - 80
+    local y = (player.y + 96 - camera.y) * camera.zoom + 360 + 8
+    x = math.max(0, math.min(x, 1280 - 160))
+    y = math.max(0, math.min(y, 720 - 90))
     local w, h = 160, 90
 
     ui.draw_bubble(x, y, w, h)
