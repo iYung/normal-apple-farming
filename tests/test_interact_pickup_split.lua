@@ -7,7 +7,7 @@ local runner        = require("lua/headless/runner")
 local HeadlessInput = require("lua/headless/input")
 
 local ctx   = runner.setup(function(input, sm)
-    return require("game/scenes/game_scene").new()
+    return require("game/scenes/game_scene").new(sm)
 end)
 local scene  = ctx.sm.current
 local player = scene.player
