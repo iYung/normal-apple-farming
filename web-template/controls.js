@@ -49,7 +49,7 @@
     '}',
     '#game-controls .cluster-right {',
     '  display: grid;',
-    '  grid-template-columns: repeat(2, 60px);',
+    '  grid-template-columns: repeat(3, 60px);',
     '  grid-template-rows: repeat(1, 60px);',
     '  gap: 6px;',
     '}',
@@ -104,12 +104,16 @@
     '  grid-column: 3;',
     '  grid-row: 2;',
     '}',
-    '#game-controls .btn-e {',
+    '#game-controls .btn-f {',
     '  grid-column: 1;',
     '  grid-row: 1;',
     '}',
-    '#game-controls .btn-esc {',
+    '#game-controls .btn-e {',
     '  grid-column: 2;',
+    '  grid-row: 1;',
+    '}',
+    '#game-controls .btn-esc {',
+    '  grid-column: 3;',
     '  grid-row: 1;',
     '}'
   ].join('\n');
@@ -120,7 +124,7 @@
   // which SDL maps to nothing, so all button presses are silently ignored.
   var KEY_CODES = {
     'w': 87, 'a': 65, 's': 83, 'd': 68,
-    'e': 69, 'Escape': 27
+    'e': 69, 'f': 70, 'Escape': 27
   };
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -197,6 +201,11 @@
     var rightCluster = document.createElement('div');
     rightCluster.className = 'cluster-right';
 
+    var btnF = document.createElement('button');
+    btnF.className = 'btn-f';
+    btnF.textContent = 'F';
+    attachButton(btnF, 'f', 'KeyF');
+
     var btnE = document.createElement('button');
     btnE.className = 'btn-e';
     btnE.textContent = 'E';
@@ -207,6 +216,7 @@
     btnEsc.textContent = 'Esc';
     attachButton(btnEsc, 'Escape', 'Escape');
 
+    rightCluster.appendChild(btnF);
     rightCluster.appendChild(btnE);
     rightCluster.appendChild(btnEsc);
 
