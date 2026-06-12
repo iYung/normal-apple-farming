@@ -2,6 +2,7 @@ local Input   = require("core/lua/input")
 local Roll    = require("game/items/roll")
 local Knife   = require("game/items/knife")
 local Breeder = require("game/entities/breeder")
+local Rocket  = require("game/items/rocket")
 local CRT     = require("game/shaders/crt")
 local Fonts   = require("core/lua/fonts")
 
@@ -24,6 +25,7 @@ local CATALOGUE = {
     { name = "Wire Roll", cost = 20,  desc = "Place wire fencing to redirect animals.", constructor = Roll.new,    image = love.graphics.newImage("assets/images/items/wire_roll.png") },
     { name = "Knife",     cost = 40,  desc = "Remove wire fencing within reach.",       constructor = Knife.new,   image = love.graphics.newImage("assets/images/items/knife.png")     },
     { name = "Breeder",   cost = 100, desc = "Place two animals inside to breed.",      constructor = Breeder.new, image = love.graphics.newImage("assets/images/breeder/love_bin.png") },
+    { name = "Rocket",   cost = 300, desc = "A one-way ticket skyward.",               constructor = Rocket.new,  image = love.graphics.newImage("assets/images/items/rocket.png") },
 }
 
 local PREVIEW_SIZE = 160

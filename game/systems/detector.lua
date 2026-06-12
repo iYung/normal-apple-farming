@@ -37,11 +37,16 @@ function Detector.is_knife(e)
     return e ~= nil and e._type == "knife"
 end
 
+function Detector.is_rocket(e)
+    return e ~= nil and e._type == "rocket"
+end
+
 function Detector.can_pickup(e)
     if e == nil then return false end
     return e._type == "animal"
         or e._type == "roll"
         or e._type == "knife"
+        or e._type == "rocket"
 end
 
 -- Geometry helpers

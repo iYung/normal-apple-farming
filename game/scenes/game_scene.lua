@@ -12,6 +12,7 @@ local Roll         = require("game/items/roll")
 local Knife        = require("game/items/knife")
 local ShopItem     = require("game/items/shop_item")
 local ShopScene    = require("game/scenes/shop_scene")
+local GameOverScene = require("game/scenes/game_over_scene")
 local JobGenerator = require("game/systems/job_generator")
 local Detector     = require("game/systems/detector")
 local AnimalInfo   = require("game/ui/animal_info")
@@ -39,6 +40,7 @@ end
 function GameScene:on_enter()
     if self._initialized then return end
     self._initialized = true
+    self.active_rocket = nil
 
     self.game_state = GameState.new()
 
@@ -115,15 +117,20 @@ function GameScene:update(dt)
     -- Game systems
     self.job_generator:update(dt)
 
-    -- Player update (passes self as scene)
-    self.player:update(dt, self)
-
-    -- Camera: follow player, clamp so viewport never shows outside world
-    self.camera:follow(self.player:centre(), 0.08)
-    local half_vw = VIEW_W / 2
-    local half_vh = VIEW_H / 2
-    self.camera.x = math.max(half_vw, math.min(self.camera.x, WORLD_W - half_vw))
-    self.camera.y = math.max(half_vh, math.min(self.camera.y, WORLD_H - half_vh))
+    if not self.active_rocket then
+        -- Normal gameplay: update player and follow with clamped camera
+        self.player:update(dt, self)
+        self.camera:follow(self.player:centre(), 0.08)
+        local half_vw = VIEW_W / 2
+        local half_vh = VIEW_H / 2
+        self.camera.x = math.max(half_vw, math.min(self.camera.x, WORLD_W - half_vw))
+        self.camera.y = math.max(half_vh, math.min(self.camera.y, WORLD_H - half_vh))
+    else
+        -- Rocket launched: skip player update, follow rocket off-screen
+        local rc = { x = self.active_rocket.x + self.active_rocket.w / 2,
+                     y = self.active_rocket.y + self.active_rocket.h / 2 }
+        self.camera:follow(rc, 0.05)
+    end
 
     -- Animals
     for _, a in ipairs(self.animals) do
@@ -139,6 +146,9 @@ function GameScene:update(dt)
             local new_animal = Animal.new(ox, oy, result)
             table.insert(self.animals, new_animal)
             self.game_state.animal_population = self.game_state.animal_population + 1
+        end
+        if result == "launch_complete" then
+            self.scene_manager:switch(GameOverScene.new(self.game_state, self.scene_manager))
         end
     end
 
@@ -207,7 +217,9 @@ function GameScene:draw()
     for _, a in ipairs(self.animals) do
         table.insert(entities, a)
     end
-    table.insert(entities, self.player)
+    if not self.active_rocket then
+        table.insert(entities, self.player)
+    end
 
     table.sort(entities, function(a, b)
         return (a.y + a.h) < (b.y + b.h)
