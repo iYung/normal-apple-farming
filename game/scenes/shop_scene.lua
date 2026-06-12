@@ -3,14 +3,12 @@ local Roll    = require("game/items/roll")
 local Knife   = require("game/items/knife")
 local Breeder = require("game/entities/breeder")
 local CRT     = require("game/shaders/crt")
-local UI      = require("game/ui")
 local Fonts   = require("core/lua/fonts")
 
 local _font_family = Fonts.from("assets/fonts/font.ttf")
 local font_name    = _font_family.new(32)
 local font_desc    = _font_family.new(20)
 local font_price   = _font_family.new(26)
-local font_ui      = _font_family.new(16)
 
 local img_buy_bg       = love.graphics.newImage("assets/images/shop/buy_bg.png")
 local img_arrow_left   = love.graphics.newImage("assets/images/shop/arrow_left.png")
@@ -194,22 +192,6 @@ function ShopScene:draw()
     CRT.apply()
     love.graphics.draw(self.canvas, 0, 0)
     CRT.clear()
-
-    -- HUD (drawn after CRT, unshaded)
-    local hints = { "\xe2\x86\x90 \xe2\x86\x92  Cycle", "E  Buy", "S  Close" }
-    UI.draw_currency_bubble(self.game_state.money, 10, 10, font_ui)
-    UI.draw_hud_box(hints, font_ui, 10)
-
-    love.graphics.setFont(font_ui)
-    love.graphics.setColor(0, 0, 0, 1)
-    local PAD        = 14
-    local line_h_hud = 20
-    local box_h      = #hints * line_h_hud + PAD * 2
-    local ty         = VIEW_H - 10 - box_h + PAD
-    for _, hint in ipairs(hints) do
-        love.graphics.print(hint, 10 + PAD, ty)
-        ty = ty + line_h_hud
-    end
 
     love.graphics.setFont(prev_font)
     love.graphics.setColor(1, 1, 1, 1)
