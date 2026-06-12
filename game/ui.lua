@@ -68,4 +68,9 @@ local function draw_currency_bubble(currency, x, y, font)
     love.graphics.setColor(1, 1, 1, 1)
 end
 
-return { draw_hud_box = draw_hud_box, draw_currency_bubble = draw_currency_bubble }
+local function draw_bubble(x, y, w, h)
+    love.graphics.setColor(1, 1, 1, 1)
+    draw9(speech_bubble, x, y, w, h, { top = 12, right = 12, bottom = 12, left = 12 })
+end
+
+return { draw_hud_box = draw_hud_box, draw_currency_bubble = draw_currency_bubble, draw_bubble = draw_bubble }
