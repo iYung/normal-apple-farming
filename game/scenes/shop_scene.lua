@@ -35,8 +35,8 @@ function ShopScene.new(game_state, scene_manager, game_scene)
     self.game_scene    = game_scene
     self.selected      = 1
     self.input = Input.new({
-        left     = { "left" },
-        right    = { "right" },
+        left     = { "a", "left"  },
+        right    = { "d", "right" },
         interact = { "e" },
         cancel   = { "s", "down", "escape" },
     })
