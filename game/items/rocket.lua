@@ -5,7 +5,7 @@ Rocket.__index = Rocket
 setmetatable(Rocket, { __index = Item })
 
 function Rocket.new(x, y)
-    local self = Item.new(x, y, "Rocket", "assets/images/items/rocket.png", 120, 240)
+    local self = Item.new(x, y, "Rocket", "assets/images/items/rocket.png", 200, 400)
     setmetatable(self, Rocket)
     self._type        = "rocket"
     self.carriable    = true

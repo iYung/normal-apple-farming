@@ -18,7 +18,7 @@ function GameOverScene.new(game_state, scene_manager)
     self.game_state    = game_state
     self.scene_manager = scene_manager
     self.canvas = love.graphics.newCanvas(VIEW_W, VIEW_H)
-    self.input = Input.new({ restart = { "r" } })
+    self.input = Input.new({ restart = { "e" } })
     return self
 end
 
@@ -70,7 +70,7 @@ function GameOverScene:draw()
     -- "Press R to restart" prompt
     love.graphics.setFont(font_prompt)
     love.graphics.setColor(0.6, 0.6, 0.6, 1)
-    local prompt   = "Press R to restart"
+    local prompt   = "Press E to restart"
     local prompt_w = font_prompt:getWidth(prompt)
     love.graphics.print(prompt, cx - prompt_w / 2, VIEW_H - 80)
 
