@@ -8,7 +8,7 @@ You play as a farmer who:
 - Catches and carries animals around a fenced field
 - Places animals into the **Breeder** (two at a time) to produce offspring with blended traits
 - Sells animals at the **Sell Bin** to complete customer **Jobs** (e.g. "animal with speed ≥ 60 and calm personality")
-- Earns money to buy Wire Rolls, Knives, and Breeders from the **Shop**
+- Earns money to buy Wire Rolls, Knives, Breeders, and a **Rocket** from the **Shop**
 - Lays wire fences to redirect wandering animals
 
 Animals have four heritable traits: **speed**, **color** (RGB), **height**, and **personality**. The breeding system blends parent stats with small random mutations. Jobs become progressively harder as you complete more of them — early jobs ask only about speed; later jobs add personality, height, and color goals.
@@ -41,8 +41,8 @@ core/lua/           Engine classes — Camera, Drawer, Input, Scene,
 game/
   data/             AnimalStats, Job/Goal data classes
   entities/         Animal, Player, Breeder, SellBin, Wire
-  items/            Item base class, Roll, Knife, ShopItem
-  scenes/           GameScene (main), ShopScene (buy menu), SettingsMenu (overlay)
+  items/            Item base class, Roll, Knife, ShopItem, Rocket
+  scenes/           GameScene (main), ShopScene (buy menu), SettingsMenu (overlay), GameOverScene (rocket end)
   shaders/          AnimalColor, Outline, Sway, CRT GLSL shaders
   systems/          Mapper (tile grid), Detector (type/AABB helpers), JobGenerator
   ui/               AnimalInfo, JobInfo, MoneyInfo, ActionsInfo HUD panels

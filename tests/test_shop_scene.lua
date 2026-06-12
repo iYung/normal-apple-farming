@@ -50,16 +50,20 @@ do
     print("PASS: right advances to 3")
 
     press(scene, "right")
+    assert(scene.selected == 4, "right should advance to 4 (Rocket), got " .. scene.selected)
+    print("PASS: right advances to 4 (Rocket)")
+
+    press(scene, "right")
     assert(scene.selected == 1, "right should wrap to 1, got " .. scene.selected)
     print("PASS: right wraps around to 1")
 
     press(scene, "left")
-    assert(scene.selected == 3, "left from 1 should wrap to 3, got " .. scene.selected)
-    print("PASS: left wraps from 1 to 3")
+    assert(scene.selected == 4, "left from 1 should wrap to 4, got " .. scene.selected)
+    print("PASS: left wraps from 1 to 4")
 
     press(scene, "left")
-    assert(scene.selected == 2, "left should go to 2, got " .. scene.selected)
-    print("PASS: left goes back to 2")
+    assert(scene.selected == 3, "left should go to 3, got " .. scene.selected)
+    print("PASS: left goes back to 3")
 end
 
 -- ── buy: insufficient funds ───────────────────────────────────────────────────
