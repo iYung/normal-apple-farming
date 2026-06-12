@@ -35,7 +35,12 @@ graphics_stub.pop              = noop
 graphics_stub.translate        = noop
 graphics_stub.scale            = noop
 graphics_stub.clear            = noop
-graphics_stub.getFont          = function() return {} end
+graphics_stub.getFont          = function()
+  return {
+    getWidth  = function(_, s) return #(s or "") * 8 end,
+    getHeight = function() return 20 end,
+  }
+end
 
 -- Global screen dimension query (not the stub-image version).
 graphics_stub.getDimensions = function() return 1280, 720 end

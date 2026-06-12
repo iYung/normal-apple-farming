@@ -1,3 +1,5 @@
+local ui = require("game/ui")
+
 local MoneyInfo = {}
 MoneyInfo.__index = MoneyInfo
 
@@ -8,18 +10,13 @@ function MoneyInfo.new(game_state)
 end
 
 function MoneyInfo:draw()
-    local x, y = 16, 120   -- below the animal_info panel (which is at y=16, h=90)
-    local w, h = 160, 32
+    local x, y = 16, 120
+    local w, h = 160, 48
 
-    -- Background
-    love.graphics.setColor(0.1, 0.1, 0.15, 0.85)
-    love.graphics.rectangle("fill", x, y, w, h, 4, 4)
-    love.graphics.setColor(0.5, 0.5, 0.7, 1)
-    love.graphics.rectangle("line", x, y, w, h, 4, 4)
+    ui.draw_bubble(x, y, w, h)
 
-    love.graphics.setColor(0.9, 0.85, 0.2, 1)
-    love.graphics.print("$" .. self._state.money, x + 8, y + 8)
-
+    love.graphics.setColor(0.1, 0.1, 0.1, 1)
+    love.graphics.print("$" .. self._state.money, x + 10, y + 14)
     love.graphics.setColor(1, 1, 1, 1)
 end
 

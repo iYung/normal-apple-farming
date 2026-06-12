@@ -1,4 +1,5 @@
 local Detector = require("game/systems/detector")
+local ui       = require("game/ui")
 
 local ActionsInfo = {}
 ActionsInfo.__index = ActionsInfo
@@ -20,16 +21,6 @@ function ActionsInfo:set_held(item_or_nil)
 end
 
 function ActionsInfo:draw()
-    local x  = 16
-    local y  = 720 - 48
-    local w  = 500
-    local h  = 36
-
-    love.graphics.setColor(0.1, 0.1, 0.15, 0.85)
-    love.graphics.rectangle("fill", x, y, w, h, 4, 4)
-
-    love.graphics.setColor(0.8, 0.8, 0.8, 1)
-
     -- E key hint
     local e_hint = ""
     if self._held then
@@ -52,8 +43,19 @@ function ActionsInfo:draw()
         end
     end
 
-    love.graphics.print(e_hint .. o_hint, x + 8, y + 10)
+    local PAD    = 14
+    local margin = 10
+    local font   = love.graphics.getFont()
+    local hint   = e_hint .. o_hint
+    local box_w  = font:getWidth(hint) + PAD * 2
+    local box_h  = 20 + PAD * 2   -- one line_height row
+    local box_x  = margin
+    local box_y  = 720 - margin - box_h
 
+    ui.draw_hud_box({hint}, font, margin)
+
+    love.graphics.setColor(0.1, 0.1, 0.1, 1)
+    love.graphics.print(hint, box_x + PAD, box_y + PAD)
     love.graphics.setColor(1, 1, 1, 1)
 end
 
