@@ -11,7 +11,7 @@ local ANIM_SPEED = 0.15  -- seconds per walk frame
 local Player = {}
 Player.__index = Player
 
-function Player.new(x, y)
+function Player.new(x, y, input)
     local self = setmetatable({}, Player)
     self._type     = "player"
     self.x         = x or 600
@@ -23,7 +23,7 @@ function Player.new(x, y)
     self._anim_timer = 0
     self._anim_frame = 0
 
-    self.input = Input.new({
+    self.input = input or Input.new({
         move_up    = { "w", "up" },
         move_down  = { "s", "down" },
         move_left  = { "a", "left" },
