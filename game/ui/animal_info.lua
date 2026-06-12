@@ -1,5 +1,8 @@
 local AnimalColorShader = require("game/shaders/animal_color")
 
+local img_container = love.graphics.newImage("assets/images/hud/info_container.png")
+local img_swatch    = love.graphics.newImage("assets/images/hud/color_swatch.png")
+
 local AnimalInfo = {}
 AnimalInfo.__index = AnimalInfo
 
@@ -21,10 +24,8 @@ function AnimalInfo:draw()
     local w, h = 160, 90
 
     -- Background
-    love.graphics.setColor(0.1, 0.1, 0.15, 0.85)
-    love.graphics.rectangle("fill", x, y, w, h, 4, 4)
-    love.graphics.setColor(0.5, 0.5, 0.7, 1)
-    love.graphics.rectangle("line", x, y, w, h, 4, 4)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.draw(img_container, x, y, 0, 1, 0.5)  -- 192×96 scaled panel
 
     -- Stats text
     love.graphics.setColor(1, 1, 1, 1)
@@ -35,10 +36,7 @@ function AnimalInfo:draw()
     -- Color swatch
     love.graphics.print("Color:", x + 8, y + 56)
     love.graphics.setColor(stats.color.r, stats.color.g, stats.color.b, 1)
-    love.graphics.rectangle("fill", x + 60, y + 58, 20, 12)
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.rectangle("line", x + 60, y + 58, 20, 12)
-
+    love.graphics.draw(img_swatch, x + 60, y + 56)
     love.graphics.setColor(1, 1, 1, 1)
 end
 
