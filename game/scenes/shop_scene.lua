@@ -43,11 +43,17 @@ function ShopScene.new(game_state, scene_manager, game_scene)
     return self
 end
 
-function ShopScene:on_enter() end
-function ShopScene:on_exit()  end
+function ShopScene:on_enter()
+    self._skip_frame = true
+end
+function ShopScene:on_exit() end
 
 function ShopScene:update(dt)
     self.input:update()
+    if self._skip_frame then
+        self._skip_frame = false
+        return
+    end
 
     if self.input:pressed("left") then
         self.selected = self.selected - 1
