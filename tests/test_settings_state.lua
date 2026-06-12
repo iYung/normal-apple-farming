@@ -8,7 +8,7 @@ assert(s.keybinds.move_up    == "w",     "default move_up")
 assert(s.keybinds.move_down  == "s",     "default move_down")
 assert(s.keybinds.move_left  == "a",     "default move_left")
 assert(s.keybinds.move_right == "d",     "default move_right")
-assert(s.keybinds.interact   == "space", "default interact")
+assert(s.keybinds.interact   == "e",     "default interact")
 print("PASS: default constructor")
 
 -- 2: toggle_fullscreen flips the flag
@@ -38,7 +38,7 @@ local s5 = SettingsState.new()
 local m = s5:key_map()
 assert(type(m.move_up) == "table",   "key_map move_up should be a table")
 assert(m.move_up[1]    == "w",       "key_map move_up[1] should be w")
-assert(m.interact[1]   == "space",   "key_map interact[1] should be space")
+assert(m.interact[1]   == "e",       "key_map interact[1] should be e")
 print("PASS: key_map format")
 
 -- 6: key_map omits nil bindings
