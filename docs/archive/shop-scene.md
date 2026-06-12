@@ -1,0 +1,9 @@
+## Shop Scene Checklist
+
+- [x] Task A — `game/scenes/shop_ui.lua` — Delete this file entirely; it is replaced by the new shop scene
+- [x] Task B — `game/entities/player.lua` — Remove the `shop = { "tab" }` input binding and the `if input:pressed("shop")` toggle block that sets `scene.shop_open`
+- [x] Task C — `game/items/shop_item.lua` — Create new file: extend `Item`; `carriable = true`, `sellable = false`, `name = "Shop"`; constructor takes a `shop_scene` reference; `interact(player, scene, scene_manager)` calls `scene_manager:switch(self.shop_scene)` only when `player.held_item` is nil
+- [x] Task D — `game/scenes/shop_scene.lua` — Create new file: a `Scene` subclass with a CATALOGUE table (Wire Roll $20, Knife $40, Breeder $100 — constructors imported from their modules); `update` handles left/right navigation and interact-to-buy (deduct `game_state.money`, set `game_state.player.held_item`, switch back to game_scene) and move_down-to-cancel (switch back to game_scene); `draw` renders a centred panel with item name, description, cost coloured green/affordable or red/cannot-afford, left/right arrows, and dot row for position
+- [x] Task E — `game/scenes/game_scene.lua` — Accept `scene_manager` as second arg to `GameScene.new()`; store it as `self.scene_manager`; in `on_enter` create a `ShopScene` and a `ShopItem` (pre-placed near world centre) and add it to `self.items`; remove all `shop_open`, `shop_ui` references; pass `scene_manager` through in the player interact path so items receive it (update `_handle_interact` call / player update call signature)
+- [x] Task F — `game/entities/player.lua` — Update `interact` method signature and item dispatch so that `item:interact(player, scene, scene_manager)` is called with scene_manager as the third argument (GameScene must pass it in from Task E)
+- [x] Task G — `main.lua` — Change `GameScene.new()` to `GameScene.new(manager)` so the scene_manager is injected
