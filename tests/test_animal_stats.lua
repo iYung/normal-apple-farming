@@ -51,7 +51,31 @@ for i = 1, 30 do
 end
 print("PASS: breed() clamping")
 
--- Test 5: personality_to_face maps all personalities
+-- Test 5: breed() offspring within BREED bounds
+for i = 1, 30 do
+    local a = AnimalStats.new(0,  {r=0, g=0, b=0}, 1, "calm")
+    local b = AnimalStats.new(200,{r=1, g=1, b=1}, 5, "silly")
+    local offspring = AnimalStats.breed(a, b)
+    assert(offspring.speed >= 0 and offspring.speed <= 200,
+        "BREED bounds: speed out of [0, 200]: " .. offspring.speed)
+    assert(offspring.height >= 1,
+        "BREED bounds: height below 1: " .. offspring.height)
+    assert(offspring.color.r >= 0 and offspring.color.r <= 1,
+        "BREED bounds: color.r out of [0, 1]")
+    assert(offspring.color.g >= 0 and offspring.color.g <= 1,
+        "BREED bounds: color.g out of [0, 1]")
+    assert(offspring.color.b >= 0 and offspring.color.b <= 1,
+        "BREED bounds: color.b out of [0, 1]")
+    local valid_p = false
+    for _, p in ipairs(AnimalStats.PERSONALITIES) do
+        if offspring.personality == p then valid_p = true end
+    end
+    assert(valid_p,
+        "BREED bounds: personality not in PERSONALITIES: " .. tostring(offspring.personality))
+end
+print("PASS: breed() offspring within BREED bounds")
+
+-- Test 6: personality_to_face maps all personalities
 for _, p in ipairs(AnimalStats.PERSONALITIES) do
     local face = AnimalStats.personality_to_face(p)
     assert(type(face) == "string" and #face > 0,

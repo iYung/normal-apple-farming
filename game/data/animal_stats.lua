@@ -11,6 +11,27 @@ local FACE_MAP = {
     silly      = "assets/images/animal/animal_face_silly.png",
 }
 
+local BREED = {
+    speed = {
+        deviance = 50,
+        min      = 0,
+        max      = 200,
+    },
+    color = {
+        deviance = 0.2,
+        min      = 0,
+        max      = 1,
+    },
+    height = {
+        deviance        = 1,
+        mutation_chance = 0.5,
+        min             = 1,
+    },
+    personality = {
+        inherit_chance = 0.8,
+    },
+}
+
 function AnimalStats.new(speed, color, height, personality)
     local self = setmetatable({}, AnimalStats)
     self.speed       = speed       or 100
@@ -37,14 +58,14 @@ local function clamp(v, lo, hi)
 end
 
 function AnimalStats.breed(a, b)
-    -- speed: average ± random integer [-50, 50], clamped 0–200
-    local speed = math.floor((a.speed + b.speed) / 2) + math.random(-50, 50)
-    speed = clamp(speed, 0, 200)
+    -- speed: average ± deviance, clamped
+    local speed = math.floor((a.speed + b.speed) / 2) + math.random(-BREED.speed.deviance, BREED.speed.deviance)
+    speed = clamp(speed, BREED.speed.min, BREED.speed.max)
 
-    -- color: per-channel average ± random float [-0.2, 0.2], clamped 0–1
+    -- color: per-channel average ± deviance, clamped
     local function blend_channel(ca, cb)
-        local delta = math.random() * 0.4 - 0.2  -- uniform in [-0.2, 0.2]
-        return clamp((ca + cb) / 2 + delta, 0, 1)
+        local delta = math.random() * (2 * BREED.color.deviance) - BREED.color.deviance
+        return clamp((ca + cb) / 2 + delta, BREED.color.min, BREED.color.max)
     end
     local color = {
         r = blend_channel(a.color.r, b.color.r),
@@ -52,16 +73,16 @@ function AnimalStats.breed(a, b)
         b = blend_channel(a.color.b, b.color.b),
     }
 
-    -- height: round of average, then 50% chance ±1, min 1
+    -- height: round of average, then mutation_chance to shift ±deviance, clamped to min
     local height = math.floor((a.height + b.height) / 2 + 0.5)
-    if math.random() < 0.5 then
-        height = height + (math.random(0, 1) == 0 and -1 or 1)
+    if math.random() < BREED.height.mutation_chance then
+        height = height + (math.random(0, 1) == 0 and -BREED.height.deviance or BREED.height.deviance)
     end
-    height = math.max(1, height)
+    height = math.max(BREED.height.min, height)
 
-    -- personality: 80% pick one parent, 20% random
+    -- personality: inherit_chance to pick one parent, otherwise random
     local personality
-    if math.random() < 0.8 then
+    if math.random() < BREED.personality.inherit_chance then
         local parents = {a.personality, b.personality}
         personality = parents[math.random(2)]
     else
