@@ -12,9 +12,16 @@ end)
 local scene  = ctx.sm.current
 local player = scene.player
 
--- Replace real keyboard Input with a scriptable HeadlessInput for all tests.
+-- Use a dedicated HeadlessInput for the player, separate from ctx.input.
+-- runner.tick calls ctx.input:update() and player:update() calls player.input:update().
+-- If they were the same object the _pressed state would be wiped before the
+-- player's input checks run.
 local input = HeadlessInput.new()
 player.input = input
+
+local function tick(n)
+    runner.tick(ctx.input, ctx.sm, n)
+end
 
 local function find_item(type_name)
     for _, it in ipairs(scene.items) do
@@ -32,10 +39,10 @@ assert(shop_item ~= nil, "shop_item must exist in scene items")
 
 player.x = knife.x - 10
 player.y = knife.y
-runner.tick(input, ctx.sm, 1)   -- settle state
+tick(1)   -- settle state
 
 input:press("pickup")
-runner.tick(input, ctx.sm, 1)
+tick(1)
 
 assert(player.held_item == knife, "pickup should pick up the knife")
 assert(knife.held == true,        "knife.held should be true after pickup")
@@ -44,7 +51,7 @@ print("PASS: pickup picks up a carriable item")
 -- ── 2: pickup drops the held item ────────────────────────────────────────────
 
 input:press("pickup")
-runner.tick(input, ctx.sm, 1)
+tick(1)
 
 assert(player.held_item == nil, "pickup again should drop the knife")
 assert(knife.held == false,     "knife.held should be false after drop")
@@ -54,14 +61,14 @@ print("PASS: pickup drops held item")
 
 player.x = shop_item.x
 player.y = shop_item.y
-runner.tick(input, ctx.sm, 1)
+tick(1)
 
 local switched_to = nil
 local orig_switch = scene.scene_manager.switch
 scene.scene_manager.switch = function(sm, s) switched_to = s end
 
 input:press("interact")
-runner.tick(input, ctx.sm, 1)
+tick(1)
 
 assert(switched_to ~= nil, "interact near shop with empty hands should switch scene")
 print("PASS: interact opens shop when hands are empty")
@@ -82,7 +89,7 @@ switched_to = nil
 scene.scene_manager.switch = function(sm, s) switched_to = s end
 
 input:hold("interact")
-runner.tick(input, ctx.sm, 1)
+tick(1)
 input:release("interact")
 
 assert(use_called  == true, "holding interact while holding knife should call knife.use()")
@@ -98,10 +105,10 @@ player.held_item = nil
 knife.held = false
 player.x = knife.x - 10
 player.y = knife.y
-runner.tick(input, ctx.sm, 1)
+tick(1)
 
 input:press("interact")
-runner.tick(input, ctx.sm, 1)
+tick(1)
 
 assert(player.held_item == nil, "interact should never pick up items")
 print("PASS: interact does not pick up items")
