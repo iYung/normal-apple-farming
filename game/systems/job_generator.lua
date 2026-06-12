@@ -5,22 +5,45 @@ local AnimalStats = require("game/data/animal_stats")
 local Goal = JobData.Goal
 local Job  = JobData.Job
 
+local CONFIG = {
+    spawn_interval  = 8,
+    max_active_jobs = 4,
+
+    unlocks = {
+        types = {
+            { at = 8,  type = "personality" },
+            { at = 15, type = "height" },
+            { at = 30, type = "color" },
+        },
+        max_goals = {
+            { at = 11, value = 2 },
+            { at = 25, value = 3 },
+            { at = 40, value = 4 },
+        },
+    },
+
+    reward = { base = 10, per_goal = 0.25, variance = 10, min = 1 },
+    speed  = { base = 100 },
+    height = { scale = 0.3 },
+    color  = { base = {r = 0.5, g = 0.5, b = 0.1}, dist_scale = 0.001, dist_max = 1.3, dist_min = 0.01 },
+}
+
 local JobGenerator = {}
 JobGenerator.__index = JobGenerator
 
 function JobGenerator.new(game_state)
     local self = setmetatable({}, JobGenerator)
     self._state      = game_state
-    self._timer      = Timer.new(8)
+    self._timer      = Timer.new(CONFIG.spawn_interval)
     self._max_goals  = 1
-    self._goal_types = { "speed" }  -- unlocked types; start with speed only
+    self._goal_types = { "speed" }
     return self
 end
 
 function JobGenerator:update(dt)
     if self._timer:update(dt) then
         local gs = self._state
-        if #gs.active_jobs < 4 then
+        if #gs.active_jobs < CONFIG.max_active_jobs then
             local job = self:_create_job(gs.jobs_done)
             table.insert(gs.active_jobs, job)
         end
@@ -52,12 +75,12 @@ function JobGenerator:_create_job(jobs_done)
         table.insert(goals, self:_make_goal(gtype, jobs_done))
     end
 
-    local reward = 10
+    local reward = CONFIG.reward.base
     for _ = 1, #goals do
-        reward = reward + math.floor(jobs_done * 0.25)
+        reward = reward + math.floor(jobs_done * CONFIG.reward.per_goal)
     end
-    reward = reward + math.random(-10, 10)
-    reward = math.max(1, reward)
+    reward = reward + math.random(-CONFIG.reward.variance, CONFIG.reward.variance)
+    reward = math.max(CONFIG.reward.min, reward)
 
     return Job.new(goals, reward)
 end
@@ -67,18 +90,16 @@ function JobGenerator:_update_unlocks(jobs_done)
         for _, x in ipairs(t) do if x == v then return true end end
         return false
     end
-    if jobs_done > 8  and not has(self._goal_types, "personality") then
-        table.insert(self._goal_types, "personality")
+    for _, u in ipairs(CONFIG.unlocks.types) do
+        if jobs_done > u.at and not has(self._goal_types, u.type) then
+            table.insert(self._goal_types, u.type)
+        end
     end
-    if jobs_done > 11 then self._max_goals = 2 end
-    if jobs_done > 15 and not has(self._goal_types, "height") then
-        table.insert(self._goal_types, "height")
+    for _, u in ipairs(CONFIG.unlocks.max_goals) do
+        if jobs_done > u.at then
+            self._max_goals = u.value
+        end
     end
-    if jobs_done > 25 then self._max_goals = 3 end
-    if jobs_done > 30 and not has(self._goal_types, "color") then
-        table.insert(self._goal_types, "color")
-    end
-    if jobs_done > 40 then self._max_goals = 4 end
 end
 
 -- Returns a shuffled array of `n` unique types from self._goal_types
@@ -98,32 +119,24 @@ end
 function JobGenerator:_make_goal(gtype, jobs_done)
     if gtype == "speed" then
         local diff = jobs_done + 1
-        local threshold = 100 + math.random(-diff, diff)
+        local threshold = CONFIG.speed.base + math.random(-diff, diff)
         threshold = math.max(1, threshold)
-        return Goal.speed(threshold, threshold > 100)
+        return Goal.speed(threshold, threshold > CONFIG.speed.base)
     elseif gtype == "height" then
-        local h = 1 + math.random() * 0.3 * jobs_done
-        h = math.floor(h)
+        local h = math.floor(1 + math.random() * CONFIG.height.scale * jobs_done)
         h = math.max(1, h)
         return Goal.height(h)
     elseif gtype == "color" then
-        -- Start random, average toward base (0.5, 0.5, 0.1) until dist_sq < threshold
-        local threshold = math.min(0.001 * jobs_done, 1.3)
-        threshold = math.max(0.01, threshold)  -- prevent infinite loop early
-        local r = math.random()
-        local g = math.random()
-        local b = math.random()
-        local base_r, base_g, base_b = 0.5, 0.5, 0.1
+        local c = CONFIG.color
+        local threshold = math.max(c.dist_min, math.min(c.dist_scale * jobs_done, c.dist_max))
+        local r, g, b = math.random(), math.random(), math.random()
         for _ = 1, 100 do
-            local dr = r - base_r
-            local dg = g - base_g
-            local db = b - base_b
+            local dr, dg, db = r - c.base.r, g - c.base.g, b - c.base.b
             if dr*dr + dg*dg + db*db <= threshold then break end
-            -- average toward base
             local ch = math.random(1, 3)
-            if ch == 1 then r = (r + base_r) / 2
-            elseif ch == 2 then g = (g + base_g) / 2
-            else b = (b + base_b) / 2 end
+            if ch == 1 then r = (r + c.base.r) / 2
+            elseif ch == 2 then g = (g + c.base.g) / 2
+            else b = (b + c.base.b) / 2 end
         end
         return Goal.color(r, g, b, threshold)
     elseif gtype == "personality" then
