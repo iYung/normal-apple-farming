@@ -1,6 +1,5 @@
 local Drawer       = require("core/lua/drawer")
 local Camera       = require("core/lua/camera")
-local Sprite       = require("core/lua/sprite")
 
 local GameState    = require("game/game_state")
 local Animal       = require("game/entities/animal")
@@ -10,9 +9,10 @@ local SellBin      = require("game/entities/sell_bin")
 local Wire         = require("game/entities/wire")
 local Roll         = require("game/items/roll")
 local Knife        = require("game/items/knife")
+local ShopItem     = require("game/items/shop_item")
+local ShopScene    = require("game/scenes/shop_scene")
 local JobGenerator = require("game/systems/job_generator")
 local Detector     = require("game/systems/detector")
-local ShopUI       = require("game/scenes/shop_ui")
 local AnimalInfo   = require("game/ui/animal_info")
 local JobInfo      = require("game/ui/job_info")
 local MoneyInfo    = require("game/ui/money_info")
@@ -26,29 +26,45 @@ local WORLD_H = 1440
 local GameScene = {}
 GameScene.__index = GameScene
 
-function GameScene.new()
+function GameScene.new(scene_manager)
     local self = setmetatable({}, GameScene)
-    self.drawer = Drawer.new()
-    self.camera = Camera.new()
+    self.drawer        = Drawer.new()
+    self.camera        = Camera.new()
+    self.scene_manager = scene_manager
+    self._initialized  = false
     return self
 end
 
 function GameScene:on_enter()
+    if self._initialized then return end
+    self._initialized = true
+
     self.game_state = GameState.new()
 
     -- Entity lists
     self.animals   = {}
     self.items     = {}
     self.wires     = {}
-    self.wire_grid = {}  -- Mapper-key → Wire table
+    self.wire_grid = {}
 
-    -- Fixtures (pickupable, live in items list)
+    -- Shop scene (created here so it can reference self)
+    self._shop_scene = ShopScene.new(self.game_state, self.scene_manager, self)
+
+    -- Fixtures
     local bx, by = WORLD_W / 2 - 300, WORLD_H / 2
     local sx, sy = WORLD_W / 2 + 200, WORLD_H / 2
     table.insert(self.items, Breeder.new(bx, by))
     table.insert(self.items, SellBin.new(sx, sy))
 
-    -- Spawn 6 animals at random positions across the world
+    -- ShopItem pre-placed near world centre (slightly left of centre)
+    local cx, cy = WORLD_W / 2, WORLD_H / 2
+    table.insert(self.items, ShopItem.new(cx - 160, cy + 120, self._shop_scene))
+
+    -- Starting items
+    table.insert(self.items, Roll.new(cx - 60, cy + 120))
+    table.insert(self.items, Knife.new(cx,      cy + 120))
+
+    -- Spawn 6 animals
     self.game_state.animal_population = 6
     for i = 1, 6 do
         local x = 200 + math.random(0, WORLD_W - 400)
@@ -56,29 +72,22 @@ function GameScene:on_enter()
         table.insert(self.animals, Animal.new(x, y))
     end
 
-    -- Starting items placed near world centre
-    local cx, cy = WORLD_W / 2, WORLD_H / 2
-    table.insert(self.items, Roll.new(cx - 60, cy + 120))
-    table.insert(self.items, Knife.new(cx,      cy + 120))
-
-    -- Player starts at world centre
+    -- Player
     local px, py = WORLD_W / 2, WORLD_H / 2
     self.player = Player.new(px, py)
-    self.camera.x = px + 48  -- snap camera to player on load, no pan-in
+    self.camera.x = px + 48
     self.camera.y = py + 48
 
     -- Systems
     self.job_generator = JobGenerator.new(self.game_state)
 
     -- UI
-    self.shop_open  = false
-    self.shop_ui    = ShopUI.new(self.game_state)
-    self.animal_info = AnimalInfo.new()
-    self.job_info    = JobInfo.new(self.game_state)
-    self.money_info  = MoneyInfo.new(self.game_state)
+    self.animal_info  = AnimalInfo.new()
+    self.job_info     = JobInfo.new(self.game_state)
+    self.money_info   = MoneyInfo.new(self.game_state)
     self.actions_info = ActionsInfo.new()
 
-    -- Background tileset sprite (tiled across full world)
+    -- Background tileset
     if love.filesystem.getInfo("assets/images/tileset.png") then
         local img = love.graphics.newImage("assets/images/tileset.png")
         img:setWrap("repeat", "repeat")
@@ -122,11 +131,6 @@ function GameScene:update(dt)
             table.insert(self.animals, new_animal)
             self.game_state.animal_population = self.game_state.animal_population + 1
         end
-    end
-
-    -- Shop overlay
-    if self.shop_open then
-        self.shop_ui:update(self.player.input, self.player, self)
     end
 
     -- Remove completed jobs
@@ -215,10 +219,6 @@ function GameScene:draw()
     self.job_info:draw()
     self.actions_info:draw()
 
-    -- Shop overlay
-    if self.shop_open then
-        self.shop_ui:draw()
-    end
 end
 
 return GameScene
