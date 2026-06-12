@@ -4,7 +4,7 @@ SettingsState.__index = SettingsState
 function SettingsState.new()
     local self = setmetatable({}, SettingsState)
     self.fullscreen = false
-    self.keybinds = {move_up="w", move_down="s", move_left="a", move_right="d", interact="space"}
+    self.keybinds = {move_up="w", move_down="s", move_left="a", move_right="d", interact="e", pickup="f"}
     return self
 end
 

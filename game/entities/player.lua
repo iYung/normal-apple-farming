@@ -29,7 +29,7 @@ function Player.new(x, y, input)
         move_left  = { "a", "left" },
         move_right = { "d", "right" },
         interact   = { "e" },
-        secondary  = { "o" },
+        pickup     = { "f" },
     })
 
     -- Load sprites into a SpriteSet
@@ -106,14 +106,16 @@ function Player:update(dt, scene)
         self.held_item.y = self.y - self.held_item.h
     end
 
-    -- Interact (E): press once, debounce
-    if self.input:pressed("interact") then
+    -- Interact: held for knife/spool, single press for shop
+    if self.held_item and self.held_item.use and self.input:is_down("interact") then
+        self.held_item:use(self, scene)
+    elseif self.input:pressed("interact") then
         self:_handle_interact(scene)
     end
 
-    -- Secondary action (O held)
-    if self.input:is_down("secondary") and self.held_item and self.held_item.use then
-        self.held_item:use(self, scene)
+    -- Pickup: press once to carry or drop
+    if self.input:pressed("pickup") then
+        self:_handle_pickup(scene)
     end
 
     -- Highlight nearest pickupable entity
@@ -126,7 +128,7 @@ function Player:update(dt, scene)
     if near then near:highlight(true) end
 end
 
-function Player:_handle_interact(scene)
+function Player:_handle_pickup(scene)
     local held = self.held_item
 
     -- Build list of all pickup-able entities near the player
@@ -190,12 +192,19 @@ function Player:_handle_interact(scene)
                     table.insert(scene.animals, new_animal)
                     self:_pick_up(new_animal)
                 end
-            elseif not hovered.carriable and hovered.interact then
-                hovered:interact(self, scene, scene.scene_manager)
-            else
+            elseif Detector.can_pickup(hovered) then
                 self:_pick_up(hovered)
             end
         end
+    end
+end
+
+function Player:_handle_interact(scene)
+    local all_entities = {}
+    for _, it in ipairs(scene.items) do table.insert(all_entities, it) end
+    local hovered = Detector.nearest(self, all_entities, 64)
+    if hovered and not hovered.carriable and hovered.interact then
+        hovered:interact(self, scene, scene.scene_manager)
     end
 end
 

@@ -81,7 +81,7 @@ function GameScene:on_enter()
         move_left  = { "a", "left" },
         move_right = { "d", "right" },
         interact   = { "e" },
-        secondary  = { "o" },
+        pickup     = { "f" },
     })
     self.player = Player.new(px, py, self.input)
     self.camera.x = px + 48

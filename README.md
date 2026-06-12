@@ -18,8 +18,8 @@ Animals have four heritable traits: **speed**, **color** (RGB), **height**, and 
 | Key | Action |
 |-----|--------|
 | WASD / Arrow keys | Move player |
-| E | Pick up / drop animal or item; interact with Shop item to open buy menu; purchase in shop |
-| O (hold) | Use held item (place wire with Roll, remove wire with Knife) |
+| F | Pick up / drop animal or item |
+| E | Open shop (near shop counter); use held item — hold to place wire with Roll or remove wire with Knife |
 | ESC | Open / close settings menu |
 
 Controls can be rebound in the settings menu. Settings (keybinds, fullscreen) persist between sessions.

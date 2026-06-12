@@ -2,8 +2,8 @@ local Fonts = require("game/fonts")
 
 local ITEMS = { "Fullscreen / Window", "Keybinds", "Exit Settings", "Quit to Desktop" }
 
-local _ACTION_LIST   = {"move_up","move_down","move_left","move_right","interact"}
-local _ACTION_LABELS = {"up","down","left","right","interact"}
+local _ACTION_LIST   = {"move_up","move_down","move_left","move_right","interact","pickup"}
+local _ACTION_LABELS = {"up","down","left","right","interact","pickup"}
 
 local _MODIFIERS = {
     lshift=true, rshift=true, lctrl=true, rctrl=true,
