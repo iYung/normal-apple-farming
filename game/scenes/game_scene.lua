@@ -235,7 +235,7 @@ function GameScene:draw()
     self.camera:detach()
 
     -- HUD: screen space, unaffected by camera
-    self.animal_info:draw()
+    self.animal_info:draw(self.camera)
     self.money_info:draw()
     self.job_info:draw()
     self.actions_info:draw()

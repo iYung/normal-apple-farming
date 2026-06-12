@@ -26,9 +26,10 @@ print("PASS: AnimalInfo draws with nil animal")
 
 -- Test 3: AnimalInfo draws with an animal set
 local stats = AnimalStats.new(80, { r = 0.4, g = 0.7, b = 0.2 }, 2, "calm")
-local fake_animal = { stats = stats }
+local fake_animal = { stats = stats, x = 300, y = 300 }
+local fake_camera = { x = 640, y = 360, zoom = 1 }
 ai:set(fake_animal)
-ai:draw()
+ai:draw(fake_camera)
 print("PASS: AnimalInfo draws with animal stats")
 
 -- Test 4: JobInfo draws with no active jobs
