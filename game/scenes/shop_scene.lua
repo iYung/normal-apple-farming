@@ -38,7 +38,7 @@ function ShopScene.new(game_state, scene_manager, game_scene)
         left     = { "a", "left"  },
         right    = { "d", "right" },
         interact = { "e" },
-        cancel   = { "s", "down", "escape" },
+        cancel   = { "s", "down" },
     })
     return self
 end
@@ -135,7 +135,7 @@ function ShopScene:draw()
     -- Hint line at panel bottom
     love.graphics.setColor(0.55, 0.55, 0.65, 1)
     love.graphics.printf(
-        "[E] Buy   [S / Esc] Close",
+        "[E] Buy   [S] Close",
         PANEL_X, PANEL_Y + PANEL_H - 22, PANEL_W, "center"
     )
 
