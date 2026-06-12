@@ -37,7 +37,7 @@ function love.load()
     canvas:setFilter("nearest", "nearest")
 
     manager = SceneManager.new(LOGICAL_W, LOGICAL_H)
-    manager:switch(GameScene.new())
+    manager:switch(GameScene.new(manager))
 end
 
 function love.update(dt)

@@ -8,7 +8,7 @@ You play as a farmer who:
 - Catches and carries animals around a fenced field
 - Places animals into the **Breeder** (two at a time) to produce offspring with blended traits
 - Sells animals at the **Sell Bin** to complete customer **Jobs** (e.g. "animal with speed ≥ 60 and calm personality")
-- Earns money to buy Wire Rolls, Knives, and Pruners from the **Shop**
+- Earns money to buy Wire Rolls, Knives, and Breeders from the **Shop**
 - Lays wire fences to redirect wandering animals
 
 Animals have four heritable traits: **speed**, **color** (RGB), **height**, and **personality**. The breeding system blends parent stats with small random mutations. Jobs become progressively harder as you complete more of them — early jobs ask only about speed; later jobs add personality, height, and color goals.
@@ -18,9 +18,8 @@ Animals have four heritable traits: **speed**, **color** (RGB), **height**, and 
 | Key | Action |
 |-----|--------|
 | WASD / Arrow keys | Move player |
-| E | Pick up / drop animal or item; purchase in shop |
+| E | Pick up / drop animal or item; interact with Shop item to open buy menu; purchase in shop |
 | O (hold) | Use held item (place wire with Roll, remove wire with Knife) |
-| Tab | Open / close Shop |
 
 ## How to run
 
@@ -39,8 +38,8 @@ core/lua/           Engine classes — Camera, Drawer, Input, Scene,
 game/
   data/             AnimalStats, Job/Goal data classes
   entities/         Animal, Player, Breeder, SellBin, Wire
-  items/            Item base class, Roll, Knife, Pruner
-  scenes/           GameScene (main), ShopUI overlay
+  items/            Item base class, Roll, Knife, ShopItem
+  scenes/           GameScene (main), ShopScene (buy menu)
   shaders/          AnimalColor, Outline, Sway GLSL shaders
   systems/          Mapper (tile grid), Detector (type/AABB helpers), JobGenerator
   ui/               AnimalInfo, JobInfo, MoneyInfo, ActionsInfo HUD panels

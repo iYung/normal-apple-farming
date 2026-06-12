@@ -30,7 +30,6 @@ function Player.new(x, y)
         move_right = { "d", "right" },
         interact   = { "e" },
         secondary  = { "o" },
-        shop       = { "tab" },
     })
 
     -- Load sprites into a SpriteSet
@@ -117,11 +116,6 @@ function Player:update(dt, scene)
         self.held_item:use(self, scene)
     end
 
-    -- Shop toggle
-    if self.input:pressed("shop") then
-        scene.shop_open = not scene.shop_open
-    end
-
     -- Highlight nearest pickupable entity
     for _, a in ipairs(scene.animals) do a:highlight(false) end
     for _, it in ipairs(scene.items)  do it:highlight(false) end
@@ -196,6 +190,8 @@ function Player:_handle_interact(scene)
                     table.insert(scene.animals, new_animal)
                     self:_pick_up(new_animal)
                 end
+            elseif not hovered.carriable and hovered.interact then
+                hovered:interact(self, scene, scene.scene_manager)
             else
                 self:_pick_up(hovered)
             end
