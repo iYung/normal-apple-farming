@@ -192,7 +192,7 @@ function Player:_handle_pickup(scene)
                     table.insert(scene.animals, new_animal)
                     self:_pick_up(new_animal)
                 end
-            elseif Detector.can_pickup(hovered) then
+            else
                 self:_pick_up(hovered)
             end
         end
@@ -203,7 +203,7 @@ function Player:_handle_interact(scene)
     local all_entities = {}
     for _, it in ipairs(scene.items) do table.insert(all_entities, it) end
     local hovered = Detector.nearest(self, all_entities, 64)
-    if hovered and not hovered.carriable and hovered.interact then
+    if hovered and hovered.interact then
         hovered:interact(self, scene, scene.scene_manager)
     end
 end
