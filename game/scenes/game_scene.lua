@@ -11,6 +11,8 @@ local Wire         = require("game/entities/wire")
 local Roll         = require("game/items/roll")
 local Knife        = require("game/items/knife")
 local ShopItem     = require("game/items/shop_item")
+local Book         = require("game/items/book")
+local BookScene    = require("game/scenes/book_scene")
 local ShopScene    = require("game/scenes/shop_scene")
 local GameOverScene = require("game/scenes/game_over_scene")
 local JobGenerator = require("game/systems/job_generator")
@@ -66,6 +68,10 @@ function GameScene:on_enter()
     -- Starting items
     table.insert(self.items, Roll.new(cx - 60, cy + 120))
     table.insert(self.items, Knife.new(cx,      cy + 120))
+
+    -- Book: not in shop, spawns in world
+    local book_scene = BookScene.new(self, self.scene_manager)
+    table.insert(self.items, Book.new(cx + 60, cy + 120, book_scene))
 
     -- Spawn 6 animals
     self.game_state.animal_population = 6
