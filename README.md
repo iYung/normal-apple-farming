@@ -41,8 +41,8 @@ core/lua/           Engine classes — Camera, Drawer, Input, Scene,
 game/
   data/             AnimalStats, Job/Goal data classes
   entities/         Animal, Player, Breeder, SellBin, Wire
-  items/            Item base class, Roll, Knife, ShopItem, Rocket
-  scenes/           GameScene (main), ShopScene (buy menu), SettingsMenu (overlay), GameOverScene (rocket end)
+  items/            Item base class, Roll, Knife, ShopItem, Rocket, Book
+  scenes/           GameScene (main), ShopScene (buy menu), SettingsMenu (overlay), GameOverScene (rocket end), BookScene (full-screen read view)
   shaders/          AnimalColor, Outline, Sway, CRT GLSL shaders
   systems/          Mapper (tile grid), Detector (type/AABB helpers), JobGenerator
   ui/               AnimalInfo, JobInfo, MoneyInfo, ActionsInfo HUD panels
