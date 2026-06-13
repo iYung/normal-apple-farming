@@ -5,7 +5,7 @@ Book.__index = Book
 setmetatable(Book, { __index = Item })  -- inherit from Item
 
 function Book.new(x, y, book_scene)
-    local self = Item.new(x, y, "Book", "assets/images/items/book.png", 32, 32)
+    local self = Item.new(x, y, "Book", "assets/images/items/book.png", 48, 48)
     setmetatable(self, Book)
     self._type       = "book"
     self.carriable   = true
