@@ -4,10 +4,16 @@ local ui       = require("game/ui")
 local ActionsInfo = {}
 ActionsInfo.__index = ActionsInfo
 
-function ActionsInfo.new()
+local function key_label(keybinds, action)
+    local k = keybinds and keybinds[action] or action
+    return "[" .. k:upper() .. "]"
+end
+
+function ActionsInfo.new(keybinds)
     local self = setmetatable({}, ActionsInfo)
     self._nearby  = {}   -- list of nearby entity names (strings)
     self._held    = nil  -- currently held item/animal (or nil)
+    self._keybinds = keybinds or {}
     return self
 end
 
@@ -24,22 +30,22 @@ function ActionsInfo:draw()
     -- E key hint
     local e_hint = ""
     if self._held then
-        e_hint = "[E] Drop"
+        e_hint = key_label(self._keybinds, "pickup") .. " Drop"
     elseif #self._nearby > 0 then
         local nearest = self._nearby[1]
         local label = nearest.name or nearest._type or "item"
-        e_hint = "[E] Pick up " .. label
+        e_hint = key_label(self._keybinds, "pickup") .. " Pick up " .. label
     else
-        e_hint = "[E] Interact"
+        e_hint = key_label(self._keybinds, "interact") .. " Interact"
     end
 
     -- O key hint
     local o_hint = ""
     if self._held then
         if Detector.is_roll(self._held) then
-            o_hint = "  [O] Place wire"
+            o_hint = "  " .. key_label(self._keybinds, "interact") .. " Place wire"
         elseif Detector.is_knife(self._held) then
-            o_hint = "  [O] Remove wires"
+            o_hint = "  " .. key_label(self._keybinds, "interact") .. " Remove wires"
         end
     end
 
