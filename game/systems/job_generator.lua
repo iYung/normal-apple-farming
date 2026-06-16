@@ -23,9 +23,10 @@ local CONFIG = {
     },
 
     reward = { base = 10, per_goal = 0.25, variance = 10, min = 1 },
-    speed  = { base = 100 },
-    height = { scale = 0.3 },
-    color  = { base = {r = 0.5, g = 0.5, b = 0.1}, dist_scale = 0.001, dist_max = 1.3, dist_min = 0.01 },
+    -- calibrated from tests/test_breed_balance.lua
+    speed  = { base = 100, diff_scale = 3 },
+    height = { scale = 0.45 },
+    color  = { base = {r = 0.5, g = 0.5, b = 0.1}, dist_scale = 0.0002, dist_max = 0.3, dist_min = 0.006 },
 }
 
 local JobGenerator = {}
@@ -118,7 +119,7 @@ end
 
 function JobGenerator:_make_goal(gtype, jobs_done)
     if gtype == "speed" then
-        local diff = jobs_done + 1
+        local diff = math.max(1, math.floor(CONFIG.speed.diff_scale * (jobs_done + 1)))
         local threshold = CONFIG.speed.base + math.random(-diff, diff)
         threshold = math.max(1, threshold)
         return Goal.speed(threshold, threshold > CONFIG.speed.base)
