@@ -32,6 +32,29 @@ local BREED = {
     },
 }
 
+local MIN_LUMINANCE = 0.4
+
+local function enforce_luminance(color)
+    local L = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b
+    if L >= MIN_LUMINANCE then return color end
+    if L == 0 then
+        color.r, color.g, color.b = MIN_LUMINANCE, MIN_LUMINANCE, MIN_LUMINANCE
+        return color
+    end
+    -- Proportional scale; may clamp channels and undershoot.
+    local scale = MIN_LUMINANCE / L
+    color.r = math.min(1.0, color.r * scale)
+    color.g = math.min(1.0, color.g * scale)
+    color.b = math.min(1.0, color.b * scale)
+    -- One analytical pass: boost green (highest luminance weight) to cover any residual.
+    -- If green hits 1.0, new L >= 0.7152 > MIN_LUMINANCE, so no further pass is needed.
+    L = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b
+    if L < MIN_LUMINANCE then
+        color.g = math.min(1.0, color.g + (MIN_LUMINANCE - L) / 0.7152)
+    end
+    return color
+end
+
 function AnimalStats.new(speed, color, height, personality)
     local self = setmetatable({}, AnimalStats)
     self.speed       = speed       or 100
@@ -43,10 +66,11 @@ end
 
 function AnimalStats.random()
     local personalities = AnimalStats.PERSONALITIES
+    local color = enforce_luminance({r = math.random(), g = math.random(), b = math.random()})
     return AnimalStats.new(
         math.random(20, 180),
-        {r = math.random(), g = math.random(), b = math.random()},
-        math.random(1, 5),
+        color,
+        1,
         personalities[math.random(#personalities)]
     )
 end
@@ -67,11 +91,11 @@ function AnimalStats.breed(a, b)
         local delta = math.random() * (2 * BREED.color.deviance) - BREED.color.deviance
         return clamp((ca + cb) / 2 + delta, BREED.color.min, BREED.color.max)
     end
-    local color = {
+    local color = enforce_luminance({
         r = blend_channel(a.color.r, b.color.r),
         g = blend_channel(a.color.g, b.color.g),
         b = blend_channel(a.color.b, b.color.b),
-    }
+    })
 
     -- height: round of average, then mutation_chance to shift ±deviance, clamped to min
     local height = math.floor((a.height + b.height) / 2 + 0.5)
