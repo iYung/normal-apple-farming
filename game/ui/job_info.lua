@@ -22,7 +22,7 @@ function JobInfo:draw()
     local jobs = self._state.active_jobs
     if #jobs == 0 then return end
 
-    local panel_y = 16
+    local panel_y = 44
 
     local has_active = false
     for _, job in ipairs(jobs) do
@@ -30,9 +30,11 @@ function JobInfo:draw()
     end
     if not has_active then return end
 
+    local label = "ORDERS"
+    local label_x = panel_x + math.floor((panel_w - font:getWidth(label)) / 2)
     love.graphics.setFont(font)
-    love.graphics.setColor(TEXT_COLOR)
-    love.graphics.print("ORDERS", panel_x + PAD, panel_y - 18)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.print(label, label_x, panel_y - 28)
 
     local card_y = panel_y
 
