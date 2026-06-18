@@ -1,8 +1,5 @@
 local speech_bubble   = love.graphics.newImage("assets/images/shop/speech_bubble.png")
 local coin            = love.graphics.newImage("assets/images/shop/coin.png")
-local job_info_top    = love.graphics.newImage("assets/images/hud/job_info_top.png")
-local job_info_mid    = love.graphics.newImage("assets/images/hud/job_info_mid.png")
-local job_info_bottom = love.graphics.newImage("assets/images/hud/job_info_bottom.png")
 
 local function draw9(img, x, y, w, h, m)
     local iw, ih = img:getDimensions()
@@ -76,16 +73,4 @@ local function draw_bubble(x, y, w, h)
     draw9(speech_bubble, x, y, w, h, { top = 12, right = 12, bottom = 12, left = 12 })
 end
 
-local function draw_job_card(x, y, w, num_rows)
-    local sx = w / 192
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.draw(job_info_top, x, y, 0, sx, 1)
-    for i = 0, num_rows - 1 do
-        love.graphics.setColor(1, 1, 1, 1)
-        love.graphics.draw(job_info_mid, x, y + 42 + i * 30, 0, sx, 1)
-    end
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.draw(job_info_bottom, x, y + 42 + num_rows * 30, 0, sx, 1)
-end
-
-return { draw_hud_box = draw_hud_box, draw_currency_bubble = draw_currency_bubble, draw_bubble = draw_bubble, draw_job_card = draw_job_card }
+return { draw_hud_box = draw_hud_box, draw_currency_bubble = draw_currency_bubble, draw_bubble = draw_bubble }

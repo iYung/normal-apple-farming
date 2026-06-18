@@ -3,9 +3,7 @@ local Fonts = require("game/fonts")
 local font  = Fonts.new(14)
 
 local PAD        = 10
-local TOP_H      = 42
-local MID_H      = 30
-local BOT_H      = 19
+local LINE_H     = 18
 local GAP        = 8
 local panel_w    = 204
 local panel_x    = 1280 - 220
@@ -26,18 +24,12 @@ function JobInfo:draw()
 
     local panel_y = 16
 
-    -- Check if there is at least one active non-completed job
     local has_active = false
     for _, job in ipairs(jobs) do
-        if not job.completed then
-            has_active = true
-            break
-        end
+        if not job.completed then has_active = true; break end
     end
-
     if not has_active then return end
 
-    -- Draw "ORDERS" label above the stack
     love.graphics.setFont(font)
     love.graphics.setColor(TEXT_COLOR)
     love.graphics.print("ORDERS", panel_x + PAD, panel_y - 18)
@@ -47,45 +39,36 @@ function JobInfo:draw()
     for _, job in ipairs(jobs) do
         if not job.completed then
             local num_goals = #job.goals
-            local num_rows  = num_goals + 1
-            local card_h    = TOP_H + num_rows * MID_H + BOT_H
+            local card_h    = PAD + (num_goals + 1) * LINE_H + PAD
 
-            ui.draw_job_card(panel_x, card_y, panel_w, num_rows)
+            ui.draw_bubble(panel_x, card_y, panel_w, card_h)
 
             love.graphics.setFont(font)
             love.graphics.setColor(TEXT_COLOR)
 
-            local gy = card_y + TOP_H
+            local cy = card_y + PAD
 
             for _, goal in ipairs(job.goals) do
-                local ty = gy + math.floor((MID_H - font:getHeight()) / 2)
-
                 if goal._type == "speed" then
-                    if goal.exceed then
-                        love.graphics.print("Speed \xe2\x89\xa5 " .. goal.threshold, panel_x + PAD, ty)
-                    else
-                        love.graphics.print("Speed \xe2\x89\xa4 " .. goal.threshold, panel_x + PAD, ty)
-                    end
+                    local sym = goal.exceed and "\xe2\x89\xa5" or "\xe2\x89\xa4"
+                    love.graphics.print("Speed " .. sym .. " " .. goal.threshold, panel_x + PAD, cy)
                 elseif goal._type == "height" then
-                    love.graphics.print("Height \xe2\x89\xa5 " .. goal.value, panel_x + PAD, ty)
+                    love.graphics.print("Height \xe2\x89\xa5 " .. goal.value, panel_x + PAD, cy)
                 elseif goal._type == "personality" then
-                    love.graphics.print("Trait: " .. goal.value, panel_x + PAD, ty)
+                    love.graphics.print("Trait: " .. goal.value, panel_x + PAD, cy)
                 elseif goal._type == "color" then
-                    love.graphics.print("Color:", panel_x + PAD, ty)
+                    love.graphics.print("Color:", panel_x + PAD, cy)
                     love.graphics.setColor(goal.target_r, goal.target_g, goal.target_b, 1)
-                    love.graphics.rectangle("fill", panel_x + 60, gy + 3, 16, 10)
+                    love.graphics.rectangle("fill", panel_x + 60, cy + 3, 16, 10)
                     love.graphics.setColor(0.1, 0.1, 0.1, 1)
-                    love.graphics.rectangle("line", panel_x + 60, gy + 3, 16, 10)
+                    love.graphics.rectangle("line", panel_x + 60, cy + 3, 16, 10)
                     love.graphics.setColor(TEXT_COLOR)
                 end
-
-                gy = gy + MID_H
+                cy = cy + LINE_H
             end
 
-            -- Reward row
-            local ty = gy + math.floor((MID_H - font:getHeight()) / 2)
             love.graphics.setColor(TEXT_COLOR)
-            love.graphics.print("$" .. job.reward, panel_x + PAD, ty)
+            love.graphics.print("$" .. job.reward, panel_x + PAD, cy)
 
             card_y = card_y + card_h + GAP
         end
