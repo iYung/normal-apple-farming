@@ -38,11 +38,57 @@ local ji = JobInfo.new(gs)
 ji:draw()
 print("PASS: JobInfo draws with empty job list")
 
--- Test 5: JobInfo draws with an active job
+-- Test 5: JobInfo draws with a speed (exceed) goal
 local job = JobData.Job.new({ JobData.Goal.speed(50, true) }, 30)
 table.insert(gs.active_jobs, job)
 ji:draw()
-print("PASS: JobInfo draws with one active job")
+print("PASS: JobInfo draws with speed-exceed goal")
+
+-- Test 5b: JobInfo draws with a speed (under) goal
+gs.active_jobs = {}
+local job_slow = JobData.Job.new({ JobData.Goal.speed(80, false) }, 12)
+table.insert(gs.active_jobs, job_slow)
+ji:draw()
+print("PASS: JobInfo draws with speed-under goal")
+
+-- Test 5c: JobInfo draws with a height goal
+gs.active_jobs = {}
+local job_h = JobData.Job.new({ JobData.Goal.height(3) }, 20)
+table.insert(gs.active_jobs, job_h)
+ji:draw()
+print("PASS: JobInfo draws with height goal")
+
+-- Test 5d: JobInfo draws with a personality goal
+gs.active_jobs = {}
+local job_p = JobData.Job.new({ JobData.Goal.personality("calm") }, 18)
+table.insert(gs.active_jobs, job_p)
+ji:draw()
+print("PASS: JobInfo draws with personality goal")
+
+-- Test 5e: JobInfo draws with a color goal
+gs.active_jobs = {}
+local job_c = JobData.Job.new({ JobData.Goal.color(0.8, 0.3, 0.1, 0.05) }, 25)
+table.insert(gs.active_jobs, job_c)
+ji:draw()
+print("PASS: JobInfo draws with color goal")
+
+-- Test 5f: JobInfo draws with multiple goals in one job
+gs.active_jobs = {}
+local job_multi = JobData.Job.new({
+    JobData.Goal.speed(120, true),
+    JobData.Goal.height(2),
+    JobData.Goal.personality("silly"),
+}, 40)
+table.insert(gs.active_jobs, job_multi)
+ji:draw()
+print("PASS: JobInfo draws with multiple goals in one job")
+
+-- Test 5g: JobInfo draws with multiple active jobs
+gs.active_jobs = {}
+table.insert(gs.active_jobs, JobData.Job.new({ JobData.Goal.speed(100, true) }, 15))
+table.insert(gs.active_jobs, JobData.Job.new({ JobData.Goal.height(2) }, 20))
+ji:draw()
+print("PASS: JobInfo draws with multiple active jobs")
 
 -- Test 6: ActionsInfo draws with nothing nearby and nothing held
 local act = ActionsInfo.new()
