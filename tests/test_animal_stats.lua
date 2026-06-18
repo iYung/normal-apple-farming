@@ -20,7 +20,7 @@ print("PASS: custom constructor")
 for i = 1, 20 do
     local r = AnimalStats.random()
     assert(r.speed >= 20 and r.speed <= 180, "random speed out of range: " .. r.speed)
-    assert(r.height >= 1 and r.height <= 5, "random height out of range: " .. r.height)
+    assert(r.height == 1, "random height should always be 1, got: " .. r.height)
     assert(r.color.r >= 0 and r.color.r <= 1, "random color.r out of range")
     assert(r.color.g >= 0 and r.color.g <= 1, "random color.g out of range")
     assert(r.color.b >= 0 and r.color.b <= 1, "random color.b out of range")
@@ -31,6 +31,15 @@ for i = 1, 20 do
     assert(valid_p, "random personality not in PERSONALITIES list")
 end
 print("PASS: random() ranges")
+
+-- Test 3b: random() colors meet luminance floor
+local MIN_LUMINANCE = 0.4
+for i = 1, 50 do
+    local r = AnimalStats.random()
+    local L = 0.2126 * r.color.r + 0.7152 * r.color.g + 0.0722 * r.color.b
+    assert(L >= MIN_LUMINANCE - 1e-9, string.format("random() color too dark: L=%.4f", L))
+end
+print("PASS: random() luminance floor")
 
 -- Test 4: breed() clamping
 for i = 1, 30 do
@@ -74,6 +83,16 @@ for i = 1, 30 do
         "BREED bounds: personality not in PERSONALITIES: " .. tostring(offspring.personality))
 end
 print("PASS: breed() offspring within BREED bounds")
+
+-- Test 5b: breed() colors meet luminance floor
+for i = 1, 50 do
+    local a = AnimalStats.new(100, {r=0.05, g=0.05, b=0.05}, 1, "calm")
+    local b = AnimalStats.new(100, {r=0.05, g=0.05, b=0.05}, 1, "calm")
+    local offspring = AnimalStats.breed(a, b)
+    local L = 0.2126 * offspring.color.r + 0.7152 * offspring.color.g + 0.0722 * offspring.color.b
+    assert(L >= MIN_LUMINANCE - 1e-9, string.format("breed() color too dark: L=%.4f", L))
+end
+print("PASS: breed() luminance floor")
 
 -- Test 6: personality_to_face maps all personalities
 for _, p in ipairs(AnimalStats.PERSONALITIES) do

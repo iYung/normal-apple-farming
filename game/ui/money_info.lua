@@ -10,7 +10,7 @@ function MoneyInfo.new(game_state)
 end
 
 function MoneyInfo:draw()
-    local x, y = 16, 120
+    local x, y = 16, 16
     local w, h = 160, 48
 
     ui.draw_bubble(x, y, w, h)
