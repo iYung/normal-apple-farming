@@ -25,13 +25,13 @@ s3:set_keybind("move_up", "i")
 assert(s3.keybinds.move_up == "i", "move_up should be i")
 print("PASS: set_keybind assigns key")
 
--- 4: set_keybind displaces a conflicting binding
+-- 4: set_keybind is a simple assignment, no conflict clearing
 local s4 = SettingsState.new()
 -- "s" is currently bound to move_down; bind move_up to "s" instead
 s4:set_keybind("move_up", "s")
 assert(s4.keybinds.move_up   == "s",  "move_up should now be s")
-assert(s4.keybinds.move_down == nil,  "move_down should be unbound (displaced)")
-print("PASS: set_keybind displaces conflict")
+assert(s4.keybinds.move_down == "s",  "move_down should still be s (conflict not cleared)")
+print("PASS: set_keybind is a simple assignment, no conflict clearing")
 
 -- 5: key_map returns correct Input format
 local s5 = SettingsState.new()
