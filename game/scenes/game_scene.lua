@@ -30,12 +30,13 @@ local WORLD_H = 1440
 local GameScene = {}
 GameScene.__index = GameScene
 
-function GameScene.new(scene_manager)
+function GameScene.new(scene_manager, settings_state)
     local self = setmetatable({}, GameScene)
-    self.drawer        = Drawer.new()
-    self.camera        = Camera.new()
-    self.scene_manager = scene_manager
-    self._initialized  = false
+    self.drawer          = Drawer.new()
+    self.camera          = Camera.new()
+    self.scene_manager   = scene_manager
+    self._settings_state = settings_state
+    self._initialized    = false
     return self
 end
 
@@ -102,7 +103,7 @@ function GameScene:on_enter()
     self.animal_info  = AnimalInfo.new()
     self.job_info     = JobInfo.new(self.game_state)
     self.money_info   = MoneyInfo.new(self.game_state)
-    self.actions_info = ActionsInfo.new()
+    self.actions_info = ActionsInfo.new(self._settings_state and self._settings_state.keybinds)
 
     -- Background tileset
     if love.filesystem.getInfo("assets/images/tileset.png") then

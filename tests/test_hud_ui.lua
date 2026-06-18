@@ -44,16 +44,61 @@ table.insert(gs.active_jobs, job)
 ji:draw()
 print("PASS: JobInfo draws with one active job")
 
--- Test 6: ActionsInfo draws with nothing nearby and nothing held
-local act = ActionsInfo.new()
-act:draw()
-print("PASS: ActionsInfo draws with no context")
+-- Helper: temporarily capture love.graphics.print calls during draw(),
+-- then restore the stub. Returns the concatenated string of all printed text.
+local function capture_hint(act)
+    local captured = {}
+    local orig_print = love.graphics.print
+    love.graphics.print = function(text, ...)
+        table.insert(captured, tostring(text))
+    end
+    act:draw()
+    love.graphics.print = orig_print
+    return table.concat(captured, "")
+end
 
--- Test 7: ActionsInfo draws with a held item
-local fake_item = { _type = "roll", name = "roll", held = false, x = 0, y = 0, w = 16, h = 16 }
-act:set_held(fake_item)
+local keybinds = { interact = "e", pickup = "f" }
+
+-- Test 6: ActionsInfo draws with nothing nearby and nothing held.
+-- Expect: interact key label "[E]" and "Interact" in hint.
+local act = ActionsInfo.new(keybinds)
+local hint = capture_hint(act)
+assert(hint:find("%[E%]"),       "Test 6a: expected [E] in hint, got: " .. hint)
+assert(hint:find("Interact"),    "Test 6b: expected 'Interact' in hint, got: " .. hint)
+print("PASS: ActionsInfo nothing held/nearby → interact hint")
+
+-- Test 7: ActionsInfo with held roll.
+-- Expect: pickup key label "[F]" + "Drop", interact key label "[E]" + "Place wire".
+local fake_roll = { _type = "roll", name = "roll", held = false, x = 0, y = 0, w = 16, h = 16 }
+act:set_held(fake_roll)
 act:set_nearby({})
-act:draw()
-print("PASS: ActionsInfo draws with held item")
+hint = capture_hint(act)
+assert(hint:find("%[F%]"),        "Test 7a: expected [F] in hint, got: " .. hint)
+assert(hint:find("Drop"),         "Test 7b: expected 'Drop' in hint, got: " .. hint)
+assert(hint:find("%[E%]"),        "Test 7c: expected [E] in hint, got: " .. hint)
+assert(hint:find("Place wire"),   "Test 7d: expected 'Place wire' in hint, got: " .. hint)
+print("PASS: ActionsInfo held roll → drop + place-wire hints")
+
+-- Test 8: ActionsInfo with held knife.
+-- Expect: pickup key label "[F]" + "Drop", interact key label "[E]" + "Remove wires".
+local fake_knife = { _type = "knife", name = "knife", held = false, x = 0, y = 0, w = 16, h = 16 }
+act:set_held(fake_knife)
+act:set_nearby({})
+hint = capture_hint(act)
+assert(hint:find("%[F%]"),        "Test 8a: expected [F] in hint, got: " .. hint)
+assert(hint:find("Drop"),         "Test 8b: expected 'Drop' in hint, got: " .. hint)
+assert(hint:find("%[E%]"),        "Test 8c: expected [E] in hint, got: " .. hint)
+assert(hint:find("Remove wires"), "Test 8d: expected 'Remove wires' in hint, got: " .. hint)
+print("PASS: ActionsInfo held knife → drop + remove-wires hints")
+
+-- Test 9: ActionsInfo with nearby entity, nothing held.
+-- Expect: pickup key label "[F]" + "Pick up" in hint.
+act:set_held(nil)
+local fake_nearby = { name = "apple", _type = "item" }
+act:set_nearby({ fake_nearby })
+hint = capture_hint(act)
+assert(hint:find("%[F%]"),   "Test 9a: expected [F] in hint, got: " .. hint)
+assert(hint:find("Pick up"), "Test 9b: expected 'Pick up' in hint, got: " .. hint)
+print("PASS: ActionsInfo nearby entity → pickup hint")
 
 print("ALL TESTS PASSED")

@@ -45,7 +45,7 @@ function love.load()
         or  SettingsState.new()
 
     manager = SceneManager.new(LOGICAL_W, LOGICAL_H)
-    manager:switch(GameScene.new(manager))
+    manager:switch(GameScene.new(manager, ss))
 
     manager.current.input._map = ss:key_map()
 
