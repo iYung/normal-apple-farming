@@ -20,7 +20,7 @@ function SwayShader.apply(shader, time)
     love.graphics.setShader(shader)
     shader:send("time", time)
     shader:send("amplitude", 0.0225)
-    shader:send("frequency", 4.5)
+    shader:send("frequency", 7.5)
 end
 
 function SwayShader.clear()
