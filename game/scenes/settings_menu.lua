@@ -48,6 +48,8 @@ function SettingsMenu.new(settings_state, input, on_close)
     self._subscreen = nil
     self._subscreen_selected = 1
     self._capturing = nil
+    self._shake_row   = nil
+    self._shake_timer = 0
     self._prev_sub_up      = false
     self._prev_sub_down    = false
     self._prev_sub_confirm = false
@@ -71,8 +73,8 @@ function SettingsMenu:open()
     self._prev_down    = love.keyboard.isDown("down")  or love.keyboard.isDown(kb.move_down  or "s")
     self._prev_left    = love.keyboard.isDown("left")  or love.keyboard.isDown(kb.move_left  or "a")
     self._prev_right   = love.keyboard.isDown("right") or love.keyboard.isDown(kb.move_right or "d")
-    self._prev_confirm = love.keyboard.isDown(kb.interact     or "space")
-                      or love.keyboard.isDown("return") or love.keyboard.isDown("space")
+    self._prev_confirm = love.keyboard.isDown(kb.interact or "e")
+                      or love.keyboard.isDown("return")
     self._prev_escape  = love.keyboard.isDown("escape")
 end
 
@@ -82,6 +84,11 @@ function SettingsMenu:close()
 end
 
 function SettingsMenu:update(dt)
+    if self._shake_timer > 0 then
+        self._shake_timer = math.max(0, self._shake_timer - dt)
+        if self._shake_timer == 0 then self._shake_row = nil end
+    end
+
     if self._subscreen == "keybinds" then
         if self._capturing ~= nil then
             return
@@ -89,8 +96,8 @@ function SettingsMenu:update(dt)
 
         local up      = love.keyboard.isDown("up")   or love.keyboard.isDown(self._state.keybinds.move_up   or "w")
         local down    = love.keyboard.isDown("down") or love.keyboard.isDown(self._state.keybinds.move_down or "s")
-        local confirm = love.keyboard.isDown(self._state.keybinds.interact     or "space")
-                     or love.keyboard.isDown("return") or love.keyboard.isDown("space")
+        local confirm = love.keyboard.isDown(self._state.keybinds.interact or "e")
+                     or love.keyboard.isDown("return")
         local escape  = love.keyboard.isDown("escape")
 
         local sub_count = #_ACTION_LIST + 1
@@ -125,8 +132,8 @@ function SettingsMenu:update(dt)
     local kb = self._state.keybinds
     local up      = love.keyboard.isDown("up")    or love.keyboard.isDown(kb.move_up    or "w")
     local down    = love.keyboard.isDown("down")  or love.keyboard.isDown(kb.move_down  or "s")
-    local confirm = love.keyboard.isDown(kb.interact     or "space")
-                 or love.keyboard.isDown("return") or love.keyboard.isDown("space")
+    local confirm = love.keyboard.isDown(kb.interact or "e")
+                 or love.keyboard.isDown("return")
     local escape  = love.keyboard.isDown("escape")
 
     if up and not self._prev_up then
@@ -159,8 +166,8 @@ function SettingsMenu:_confirm()
         -- Snapshot so keys held at transition time don't immediately fire in the sub-screen
         self._prev_sub_up      = love.keyboard.isDown("up")   or love.keyboard.isDown(self._state.keybinds.move_up   or "w")
         self._prev_sub_down    = love.keyboard.isDown("down") or love.keyboard.isDown(self._state.keybinds.move_down or "s")
-        self._prev_sub_confirm = love.keyboard.isDown(self._state.keybinds.interact     or "space")
-                              or love.keyboard.isDown("return") or love.keyboard.isDown("space")
+        self._prev_sub_confirm = love.keyboard.isDown(self._state.keybinds.interact or "e")
+                              or love.keyboard.isDown("return")
         self._prev_sub_escape  = love.keyboard.isDown("escape")
     elseif self.selected == 3 then
         self:close()
@@ -187,6 +194,13 @@ function SettingsMenu:keypressed(key)
         return true
     end
     if _MODIFIERS[key] then return false end
+    for i, action in ipairs(_ACTION_LIST) do
+        if action ~= self._capturing and self._state.keybinds[action] == key then
+            self._shake_row   = i
+            self._shake_timer = 0.5
+            return true
+        end
+    end
     self._state:set_keybind(self._capturing, key)
     self._input._map = self._state:key_map()
     self._capturing = nil
@@ -205,23 +219,29 @@ function SettingsMenu:draw()
         love.graphics.setFont(self._font_btn)
         love.graphics.setColor(1, 1, 1, 1)
         for i = 1, #_ACTION_LIST do
+            local ox = 0
+            local row_r, row_g, row_b = 1, 1, 1
+            if self._shake_row == i and self._shake_timer > 0 then
+                ox = math.sin(self._shake_timer * 40) * 8 * (self._shake_timer / 0.5)
+                row_r, row_g, row_b = 1, 0.25, 0.25
+            end
             local y = self._sub_btn_y0 + (i - 1) * BTN_GAP
             local img = i == self._subscreen_selected and self._img_btn_sel or self._img_btn
             local ty = y + (BTN_H - self._font_btn:getHeight()) / 2
             -- Label bar
-            love.graphics.setColor(1, 1, 1, 1)
-            love.graphics.draw(img, BTN_X, y, 0, LABEL_W / BTN_W, 1)
-            love.graphics.printf(_ACTION_LABELS[i], BTN_X, ty, LABEL_W, "center")
+            love.graphics.setColor(row_r, row_g, row_b, 1)
+            love.graphics.draw(img, BTN_X + ox, y, 0, LABEL_W / BTN_W, 1)
+            love.graphics.printf(_ACTION_LABELS[i], BTN_X + ox, ty, LABEL_W, "center")
             -- Value bar
-            love.graphics.draw(img, BTN_X + LABEL_W + BAR_GAP, y, 0, VAL_W / BTN_W, 1)
+            love.graphics.draw(img, BTN_X + LABEL_W + BAR_GAP + ox, y, 0, VAL_W / BTN_W, 1)
             if self._capturing == _ACTION_LIST[i] then
-                love.graphics.printf("hit key", BTN_X + LABEL_W + BAR_GAP, ty, VAL_W, "center")
+                love.graphics.printf("hit key", BTN_X + LABEL_W + BAR_GAP + ox, ty, VAL_W, "center")
             elseif self._state.keybinds[_ACTION_LIST[i]] then
-                love.graphics.printf(self._state.keybinds[_ACTION_LIST[i]]:upper(), BTN_X + LABEL_W + BAR_GAP, ty, VAL_W, "center")
+                love.graphics.printf(self._state.keybinds[_ACTION_LIST[i]]:upper(), BTN_X + LABEL_W + BAR_GAP + ox, ty, VAL_W, "center")
             else
                 love.graphics.setFont(self._font_vol)
                 local vty = y + (BTN_H - self._font_vol:getHeight()) / 2
-                love.graphics.printf("UNBOUND", BTN_X + LABEL_W + BAR_GAP, vty, VAL_W, "center")
+                love.graphics.printf("UNBOUND", BTN_X + LABEL_W + BAR_GAP + ox, vty, VAL_W, "center")
                 love.graphics.setFont(self._font_btn)
             end
         end
