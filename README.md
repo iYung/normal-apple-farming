@@ -46,7 +46,7 @@ game/
   shaders/          AnimalColor, Outline, Sway, CRT GLSL shaders
   systems/          Mapper (tile grid), Detector (type/AABB helpers), JobGenerator
   ui/               AnimalInfo, JobInfo, MoneyInfo, ActionsInfo HUD panels
-  ui.lua            Shared HUD utilities (currency bubble, hints box)
+  ui.lua            Shared HUD utilities (currency bubble, hints box, 3-slice job card)
   fonts.lua         Font factory wrapper (binds assets/font.ttf)
   game_state.lua    Global state (money, wires, jobs)
   settings_state.lua  Fullscreen and keybind settings; serialises to settings.dat
@@ -74,7 +74,7 @@ To enable deploys, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as Git
 - **Scene transitions** — `SceneManager` fades through black (0.3 s) between scene switches.
 - **Headless tests** — `lua/headless/stubs.lua` installs no-op love API replacements so test files run without a window. `HeadlessInput` lets tests script action presses frame-by-frame. The `getFont` stub returns a minimal mock font (`getWidth`, `getHeight`) so UI modules that measure text can be exercised headlessly. See `tests/test_basics.lua` for a minimal example.
 - **Tile grid** — `Mapper` tracks wire placement on a 32 px tile grid; animals bounce off wire tiles each frame.
-- **Job generation** — `JobGenerator` ticks an 8-second timer and spawns jobs (up to 4 active at once). The first few jobs are fixed tutorial entries; thereafter jobs are generated randomly. All tuning values — spawn interval, active-job cap, unlock milestones, per-type goal parameters, and reward formula — live in a single `CONFIG` table at the top of `game/systems/job_generator.lua`. Goal types and multi-goal counts unlock progressively as `jobs_done` passes milestones defined in that table.
+- **Job generation** — `JobGenerator` ticks an 8-second timer and spawns jobs (up to 4 active at once). The first few jobs are fixed tutorial entries; thereafter jobs are generated randomly. All tuning values — spawn interval, active-job cap, unlock milestones, per-type goal parameters, and reward formula — live in a single `CONFIG` table at the top of `game/systems/job_generator.lua`. Goal types and multi-goal counts unlock progressively as `jobs_done` passes milestones defined in that table. Active jobs are displayed in the top-right HUD as **Orders** cards, each using a 3-slice card asset (top/mid/bottom) with one row per goal and a reward row at the bottom.
 - **Shader pipeline** — animals are drawn with a skin-color shader (replaces pure-red pixels with the animal's `stats.color`); highlighted animals get an outline glow shader; the Breeder sways while breeding. The shop scene renders to an off-screen canvas and blits through a CRT post-process shader (`game/shaders/crt.lua`).
 - **Animal info HUD** — when the player holds an animal, the stats bubble (speed, height, trait, color) floats centered above the animal in world space, computed each frame via the camera transform and clamped to screen edges.
 - **Y-sort** — all world entities (wires, ground items, animals, player) are collected into one list each frame and sorted by bottom edge Y (`y + h`) before drawing, so entities lower on screen naturally appear in front of those higher up. The held item is drawn immediately after the player in the sorted pass so it stays on top of the player sprite.

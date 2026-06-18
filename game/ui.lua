@@ -1,5 +1,5 @@
-local speech_bubble = love.graphics.newImage("assets/images/shop/speech_bubble.png")
-local coin          = love.graphics.newImage("assets/images/shop/coin.png")
+local speech_bubble   = love.graphics.newImage("assets/images/shop/speech_bubble.png")
+local coin            = love.graphics.newImage("assets/images/shop/coin.png")
 
 local function draw9(img, x, y, w, h, m)
     local iw, ih = img:getDimensions()
