@@ -1,0 +1,23 @@
+## Sounds and Music Checklist
+
+- [x] Task A — `core/lua/sound.lua` — Copy `../wip/lua/core/sound.lua` verbatim, then add a nil guard on line 18 so `manifest.animalese` being absent doesn't error: change `if love.filesystem.getInfo(manifest.animalese) then` to `if manifest.animalese and love.filesystem.getInfo(manifest.animalese) then`
+
+- [x] Task B — `assets/sounds/` and `assets/music/` — Copy audio assets from wip. Sounds: `pick_up.wav`, `put_down.wav`, `sell_plant.wav`, `clone_success.wav`, `shop_navigate.wav`, `shop_buy.wav`, `fail.wav`, `menu_navigate.wav`, `menu_confirm.wav`, `attribution.txt`. Music: `menu.mp3`, `background.mp3`, `background2.mp3`, `background3.mp3`, `background4.mp3`.
+
+- [x] Task C — `game/scenes/start_scene.lua` — New minimal title scene. On `on_enter()`: call `Sound.play_music("menu")`. In `update(dt)`: if `input:pressed("interact")`, fade menu music to 0 over 2s then `scene_manager:switch(GameScene.new(scene_manager, settings_state))`. Draw title text "Normal Apple Farming" and "Press E to start". Set `esc_opens_settings = true`. Requires `Sound = require("core/lua/sound")` and `GameScene = require("game/scenes/game_scene")`.
+
+- [x] Task D — `main.lua` — Wire up Sound and switch initial scene to StartScene. Add `local Sound = require("core/lua/sound")` and `local StartScene = require("game/scenes/start_scene")`. In `love.load()`: replace `manager:switch(GameScene.new(...))` with `manager:switch(StartScene.new(manager, ss))`, then call `Sound.load({sfx_dir="assets/sounds/", sfx={"pick_up","put_down","sell_plant","clone_success","shop_navigate","shop_buy","fail","menu_navigate","menu_confirm"}, music={menu={path="assets/music/menu.mp3",autoplay=false},bg1={path="assets/music/background.mp3",looping=false},bg2={path="assets/music/background2.mp3",looping=false},bg3={path="assets/music/background3.mp3",looping=false},bg4={path="assets/music/background4.mp3",looping=false}}})`. In `love.update(dt)`: add `Sound.update(dt)` at the top. Add `function love.focus(focused) Sound.on_focus(focused) end`.
+
+- [x] Task E — `game/scenes/game_scene.lua` — Start background music rotation. Add `local Sound = require("core/lua/sound")` at top. In `on_enter()` (after the `if self._initialized then return end` guard): add `self._bg_list = {"bg1","bg2","bg3","bg4"}`, pick a random `self._bg_index`, fade menu music to 0 over 2s (`Sound.fade_music("menu", 0, 2)`), and fade the chosen bg track in over 2s. In `update(dt)`: after existing logic, check `if not Sound.is_music_playing(self._bg_list[self._bg_index]) then self._bg_index = (self._bg_index % #self._bg_list) + 1; Sound.fade_music(self._bg_list[self._bg_index], 1, 2) end`.
+
+- [x] Task F — `game/scenes/shop_scene.lua` — Add SFX to shop interactions. Add `local Sound = require("core/lua/sound")` at top. In `update()`: play `"shop_navigate"` on left/right press, play `"shop_buy"` on successful purchase, play `"fail"` when `self.game_state.money < entry.cost` on interact press.
+
+- [x] Task G — `game/scenes/settings_menu.lua` — Add SFX to settings menu navigation. Add `local Sound = require("core/lua/sound")` at top. Play `"menu_navigate"` whenever the selected index changes (up/down on both the main screen and the keybinds sub-screen). Play `"menu_confirm"` at the top of `_confirm()`.
+
+- [x] Task H — `game/entities/player.lua` — Add pick-up and put-down SFX. Add `local Sound = require("core/lua/sound")` at top. At the end of `_pick_up()`: call `Sound.play("pick_up")`. In `_handle_pickup()`: call `Sound.play("put_down")` when dropping a held item (the `held.x = self.x` branch) and when placing an animal into a breeder (`it:try_add(held)` returns true) and when a successful sell happens (`reward > 0`).
+
+- [x] Task I — `game/entities/sell_bin.lua` — Add sell SFX. Add `local Sound = require("core/lua/sound")` at top. In `try_sell()`, after updating `game_state.money` (both the job-match and the base-price branches): call `Sound.play("sell_plant")`.
+
+- [x] Task J — `game/entities/breeder.lua` — Add breed-complete SFX. Add `local Sound = require("core/lua/sound")` at top. In `update()`, immediately after `local offspring_stats = AnimalStats.breed(...)`: call `Sound.play("clone_success")`.
+
+- [x] Task K — `tests/test_sound.lua` — Port the sound test suite from `../wip/tests/test_sound.lua`. Change the require path from `"lua/core/sound"` to `"core/lua/sound"` throughout. Update the manifest: remove the `animalese` key, update the `sfx` list to `{"pick_up","put_down","sell_plant","clone_success","shop_navigate","shop_buy","fail","menu_navigate","menu_confirm"}`. Remove any test cases that specifically test animalese (cooldown test, pitch tests). Keep all remaining tests.

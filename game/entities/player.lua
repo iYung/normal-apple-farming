@@ -4,6 +4,7 @@ local Input     = require("core/lua/input")
 local Mapper    = require("game/systems/mapper")
 local Detector  = require("game/systems/detector")
 local Animal    = require("game/entities/animal")
+local Sound     = require("core/lua/sound")
 
 local SPEED      = 180
 local ANIM_SPEED = 0.15  -- seconds per walk frame
@@ -150,6 +151,7 @@ function Player:_handle_pickup(scene)
                                 break
                             end
                         end
+                        Sound.play("put_down")
                         self.held_item = nil
                         return
                     end
@@ -167,6 +169,7 @@ function Player:_handle_pickup(scene)
                                 break
                             end
                         end
+                        Sound.play("put_down")
                         self.held_item = nil
                         return
                     end
@@ -182,6 +185,7 @@ function Player:_handle_pickup(scene)
             held.held = false
         end
         self.held_item = nil
+        Sound.play("put_down")
     else
         if hovered then
             if hovered._type == "breeder" and not hovered:is_empty() then
@@ -214,6 +218,7 @@ function Player:_pick_up(entity)
     if Detector.is_animal(entity) then
         entity:highlight(false)
     end
+    Sound.play("pick_up")
 end
 
 function Player:draw()

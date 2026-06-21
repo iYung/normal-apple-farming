@@ -3,6 +3,7 @@ local Timer         = require("core/lua/timer")
 local AnimalStats   = require("game/data/animal_stats")
 local SwayShader    = require("game/shaders/sway")
 local OutlineShader = require("game/shaders/outline")
+local Sound         = require("core/lua/sound")
 
 local BREED_TIME = 5.0  -- seconds
 
@@ -94,6 +95,7 @@ function Breeder:update(dt)
         if self._timer:update(dt) then
             -- Breed: parents stay, timer resets, offspring is spawned
             local offspring_stats = AnimalStats.breed(self._slots[1], self._slots[2])
+            Sound.play("clone_success")
             self._timer:reset(BREED_TIME)
             self._sway_time = 0
             return offspring_stats

@@ -1,6 +1,7 @@
 local Sprite        = require("core/lua/sprite")
 local JobData       = require("game/data/job")
 local OutlineShader = require("game/shaders/outline")
+local Sound         = require("core/lua/sound")
 
 local SellBin = {}
 SellBin.__index = SellBin
@@ -35,6 +36,7 @@ function SellBin:try_sell(animal, game_state)
             game_state.money = game_state.money + job.reward
             game_state.jobs_done = game_state.jobs_done + 1
             game_state.animal_population = game_state.animal_population - 1
+            Sound.play("sell_plant")
             return job.reward
         end
     end
@@ -42,6 +44,7 @@ function SellBin:try_sell(animal, game_state)
     -- No matching job — still sell for a base price of 1
     game_state.money = game_state.money + 1
     game_state.animal_population = game_state.animal_population - 1
+    Sound.play("sell_plant")
     return 1
 end
 
