@@ -1,6 +1,7 @@
 local Drawer       = require("core/lua/drawer")
 local Camera       = require("core/lua/camera")
 local Input        = require("core/lua/input")
+local Sound        = require("core/lua/sound")
 
 local GameState    = require("game/game_state")
 local Animal       = require("game/entities/animal")
@@ -43,6 +44,10 @@ end
 function GameScene:on_enter()
     if self._initialized then return end
     self._initialized = true
+    self._bg_list  = {"bg1", "bg2", "bg3", "bg4"}
+    self._bg_index = math.random(#self._bg_list)
+    Sound.fade_music("menu", 0, 2)
+    Sound.fade_music(self._bg_list[self._bg_index], 1, 2)
     self.active_rocket = nil
 
     self.game_state = GameState.new()
@@ -92,6 +97,9 @@ function GameScene:on_enter()
         interact   = { "e" },
         pickup     = { "f" },
     })
+    if self._settings_state then
+        self.input._map = self._settings_state:key_map()
+    end
     self.player = Player.new(px, py, self.input)
     self.camera.x = px + 48
     self.camera.y = py + 48
@@ -196,6 +204,11 @@ function GameScene:update(dt)
     end
     self.actions_info:set_nearby(nearby)
     self.actions_info:set_held(self.player.held_item)
+
+    if not Sound.is_music_playing(self._bg_list[self._bg_index]) then
+        self._bg_index = (self._bg_index % #self._bg_list) + 1
+        Sound.fade_music(self._bg_list[self._bg_index], 1, 2)
+    end
 end
 
 function GameScene:draw()

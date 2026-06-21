@@ -1,4 +1,5 @@
 local Input   = require("core/lua/input")
+local Sound   = require("core/lua/sound")
 local Roll    = require("game/items/roll")
 local Knife   = require("game/items/knife")
 local Breeder = require("game/entities/breeder")
@@ -65,11 +66,13 @@ function ShopScene:update(dt)
     end
 
     if self.input:pressed("left") then
+        Sound.play("shop_navigate")
         self.selected = self.selected - 1
         if self.selected < 1 then self.selected = #CATALOGUE end
     end
 
     if self.input:pressed("right") then
+        Sound.play("shop_navigate")
         self.selected = self.selected + 1
         if self.selected > #CATALOGUE then self.selected = 1 end
     end
@@ -78,12 +81,15 @@ function ShopScene:update(dt)
         local entry = CATALOGUE[self.selected]
         if self.game_state.money >= entry.cost then
             self.game_state.money = self.game_state.money - entry.cost
+            Sound.play("shop_buy")
             local player = self.game_scene.player
             local item   = entry.constructor(player.x, player.y)
             item.held               = true
             player.held_item        = item
             table.insert(self.game_scene.items, item)
             self.scene_manager:switch(self.game_scene)
+        else
+            Sound.play("fail")
         end
     end
 

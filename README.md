@@ -37,12 +37,13 @@ Requires [Love2D](https://love2d.org/) 11.x or later.
 
 ```
 core/lua/           Engine classes — Camera, Drawer, Input, Scene,
-                    SceneManager, Sprite, SpriteSet, Timer, Fonts, Save
+                    SceneManager, Sprite, SpriteSet, Timer, Fonts, Save, Sound
 game/
   data/             AnimalStats, Job/Goal data classes
   entities/         Animal, Player, Breeder, SellBin, Wire
   items/            Item base class, Roll, Knife, ShopItem, Rocket, Book
-  scenes/           GameScene (main), ShopScene (buy menu), SettingsMenu (overlay), GameOverScene (rocket end), BookScene (full-screen read view)
+  scenes/           StartScene (title), GameScene (main), ShopScene (buy menu),
+                    SettingsMenu (overlay), GameOverScene (rocket end), BookScene (full-screen read view)
   shaders/          AnimalColor, Outline, Sway, CRT GLSL shaders
   systems/          Mapper (tile grid), Detector (type/AABB helpers), JobGenerator
   ui/               AnimalInfo, JobInfo, MoneyInfo, ActionsInfo HUD panels
@@ -52,7 +53,10 @@ game/
   settings_state.lua  Fullscreen and keybind settings; serialises to settings.dat
 lua/headless/       Headless stubs and test runner
 tests/              Unit tests (run with: love . --headless)
-assets/             Images — animal sprites, player, items, tileset, hud/
+assets/
+  images/           Animal sprites, player, items, tileset, hud/
+  sounds/           SFX wav files (pick_up, put_down, sell, breed, shop, menu…)
+  music/            Background tracks bg1–bg4 and title menu.mp3
 conf.lua            Window config; suppresses graphics/audio under --headless
 main.lua            Entry point — 1280×720 canvas with letterboxing
 ```
@@ -67,6 +71,18 @@ Two GitHub Actions workflows run on pushes and PRs to `master`:
 - **`.github/workflows/web.yml`** — builds a love.js web bundle via `bash scripts/build_web.sh`, deploys production builds to Cloudflare Pages (`normal-apple-farming` project) on push to `master`, and posts a preview link comment on PRs.
 
 To enable deploys, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as GitHub Actions secrets.
+
+## Sound and music
+
+The game has full audio using LÖVE's audio system, handled by `core/lua/sound.lua`:
+
+- **Title screen** — `menu.mp3` plays on the start screen and fades out (2 s) when the game begins.
+- **Gameplay** — one of four background tracks (`bg1`–`bg4`) fades in at game start; tracks rotate automatically when one finishes (non-looping, sequential).
+- **SFX** — pick up / put down animals and items; breed complete; sell animal; shop navigate / buy / insufficient funds; settings menu navigate / confirm.
+- **Focus resume** — music resumes automatically when the window regains focus.
+- Audio is disabled in headless mode via `conf.lua`; `lua/headless/stubs.lua` provides no-op stubs so the Sound module is fully testable without a window.
+
+Sound effects by [qubodup](https://freesound.org/people/qubodup/). Music by Trash Kid. See `assets/sounds/attribution.txt`.
 
 ## Architecture notes
 

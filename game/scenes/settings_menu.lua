@@ -1,4 +1,5 @@
 local Fonts = require("game/fonts")
+local Sound = require("core/lua/sound")
 
 local ITEMS = { "Fullscreen / Window", "Keybinds", "Exit Settings", "Quit to Desktop" }
 
@@ -103,9 +104,11 @@ function SettingsMenu:update(dt)
         local sub_count = #_ACTION_LIST + 1
         if up and not self._prev_sub_up then
             self._subscreen_selected = ((self._subscreen_selected - 2) % sub_count) + 1
+            Sound.play("menu_navigate")
         end
         if down and not self._prev_sub_down then
             self._subscreen_selected = (self._subscreen_selected % sub_count) + 1
+            Sound.play("menu_navigate")
         end
         if confirm and not self._prev_sub_confirm then
             if self._subscreen_selected == sub_count then
@@ -138,9 +141,11 @@ function SettingsMenu:update(dt)
 
     if up and not self._prev_up then
         self.selected = ((self.selected - 2) % #ITEMS) + 1
+        Sound.play("menu_navigate")
     end
     if down and not self._prev_down then
         self.selected = (self.selected % #ITEMS) + 1
+        Sound.play("menu_navigate")
     end
     if confirm and not self._prev_confirm then
         self:_confirm()
@@ -158,6 +163,7 @@ function SettingsMenu:update(dt)
 end
 
 function SettingsMenu:_confirm()
+    Sound.play("menu_confirm")
     if self.selected == 1 then
         self._state:toggle_fullscreen()
     elseif self.selected == 2 then

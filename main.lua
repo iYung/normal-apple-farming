@@ -24,6 +24,8 @@ love.graphics.setDefaultFilter("nearest", "nearest")
 
 local SceneManager  = require("core/lua/scene_manager")
 local GameScene     = require("game/scenes/game_scene")
+local Sound         = require("core/lua/sound")
+local StartScene    = require("game/scenes/start_scene")
 local Save          = require("core/lua/save")
 local SettingsState = require("game/settings_state")
 local SettingsMenu  = require("game/scenes/settings_menu")
@@ -45,7 +47,22 @@ function love.load()
         or  SettingsState.new()
 
     manager = SceneManager.new(LOGICAL_W, LOGICAL_H)
-    manager:switch(GameScene.new(manager, ss))
+    manager:switch(StartScene.new(manager, ss))
+    Sound.load({
+        sfx_dir = "assets/sounds/",
+        sfx = {
+            "pick_up", "put_down", "sell_plant",
+            "clone_success", "shop_navigate", "shop_buy",
+            "fail", "menu_navigate", "menu_confirm",
+        },
+        music = {
+            menu = { path = "assets/music/menu.mp3",         autoplay = false },
+            bg1  = { path = "assets/music/background.mp3",  looping = false },
+            bg2  = { path = "assets/music/background2.mp3", looping = false },
+            bg3  = { path = "assets/music/background3.mp3", looping = false },
+            bg4  = { path = "assets/music/background4.mp3", looping = false },
+        },
+    })
 
     manager.current.input._map = ss:key_map()
 
@@ -57,6 +74,7 @@ function love.load()
 end
 
 function love.update(dt)
+    Sound.update(dt)
     if settings_menu and settings_menu.is_open then
         settings_menu:update(dt)
     else
@@ -82,6 +100,13 @@ end
 function love.keypressed(key)
     if settings_menu and settings_menu:keypressed(key) then return end
     if key == "escape" and settings_menu and not settings_menu.is_open then
+        if manager.current and manager.current.input then
+            settings_menu._input = manager.current.input
+        end
         settings_menu:open()
     end
+end
+
+function love.focus(focused)
+    Sound.on_focus(focused)
 end
