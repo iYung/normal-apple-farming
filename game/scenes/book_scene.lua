@@ -9,12 +9,13 @@ local VIEW_H = 720
 local BookScene = {}
 BookScene.__index = BookScene
 
-function BookScene.new(game_scene, scene_manager)
+function BookScene.new(game_scene, scene_manager, input)
     local self = setmetatable({}, BookScene)
     self.game_scene    = game_scene
     self.scene_manager = scene_manager
     self.canvas = love.graphics.newCanvas(VIEW_W, VIEW_H)
-    self.input = Input.new({ interact = { "e" } })
+    self._owns_input = (input == nil)
+    self.input = input or Input.new({ interact = { "e" } })
     return self
 end
 
@@ -25,7 +26,7 @@ end
 function BookScene:on_exit() end
 
 function BookScene:update(dt)
-    self.input:update()
+    if self._owns_input then self.input:update() end
     if self._skip_frame then
         self._skip_frame = false
         return

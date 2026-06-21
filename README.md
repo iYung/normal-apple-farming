@@ -15,6 +15,8 @@ Animals have four heritable traits: **speed**, **color** (RGB), **height**, and 
 
 ## Controls
 
+### Keyboard
+
 | Key | Action |
 |-----|--------|
 | WASD / Arrow keys | Move player |
@@ -23,6 +25,18 @@ Animals have four heritable traits: **speed**, **color** (RGB), **height**, and 
 | ESC | Open / close settings menu |
 
 Controls can be rebound in the settings menu. Settings (keybinds, fullscreen) persist between sessions.
+
+### Gamepad
+
+| Button | Action |
+|--------|--------|
+| Left stick / D-pad | Move player |
+| A | Interact (open shop; use held item) |
+| Y | Pick up / drop animal or item |
+| B | Cancel / back (exit shop, close menu) |
+| Start | Open / close settings menu |
+
+The game auto-detects gamepad input and switches HUD prompts to button labels. In gamepad mode the Keybinds option is hidden in the settings menu (controller layout is fixed).
 
 ## How to run
 
@@ -88,6 +102,8 @@ Sound effects by [qubodup](https://freesound.org/people/qubodup/). Music by Tras
 
 - **Fixed logical resolution** — game renders to a `1280×720` canvas; `main.lua` scales it to the window with letterboxing. Works with any window size.
 - **Scene transitions** — `SceneManager` fades through black (0.3 s) between scene switches.
+- **Shared input** — a single `Input` object is created in `main.lua` and passed through to every scene (StartScene → GameScene → ShopScene / BookScene / Player). `input:update()` is called once per frame in the main loop before `scene_manager:update(dt)`; scenes do not call it themselves. This lets the same object carry gamepad state across all scenes and surfaces `input._mode` (`"keyboard"` | `"gamepad"`) for adaptive HUD prompts.
+- **Gamepad** — `core/lua/input.lua` polls the first connected gamepad each frame: left stick (±0.3 threshold) and D-pad drive movement; A/Y/B drive interact/pickup/cancel. `key_for(action)` returns the current label (`"e"` or `"[A]"` etc.) so HUD and scene prompts adapt automatically. `love.joystickadded/removed/gamepadpressed` in `main.lua` manage the active joystick and switch `input._mode`.
 - **Headless tests** — `lua/headless/stubs.lua` installs no-op love API replacements so test files run without a window. `HeadlessInput` lets tests script action presses frame-by-frame. The `getFont` stub returns a minimal mock font (`getWidth`, `getHeight`) so UI modules that measure text can be exercised headlessly. See `tests/test_basics.lua` for a minimal example.
 - **Tile grid** — `Mapper` tracks wire placement on a 32 px tile grid; animals bounce off wire tiles each frame.
 - **Job generation** — `JobGenerator` ticks an 8-second timer and spawns jobs (up to 4 active at once). The first few jobs are fixed tutorial entries; thereafter jobs are generated randomly. All tuning values — spawn interval, active-job cap, unlock milestones, per-type goal parameters, and reward formula — live in a single `CONFIG` table at the top of `game/systems/job_generator.lua`. Goal types and multi-goal counts unlock progressively as `jobs_done` passes milestones defined in that table. Active jobs are displayed in the top-right HUD as **Orders** cards, each using a 3-slice card asset (top/mid/bottom) with one row per goal and a reward row at the bottom.

@@ -8,12 +8,13 @@ local VIEW_H = 720
 local StartScene = {}
 StartScene.__index = StartScene
 
-function StartScene.new(scene_manager, settings_state)
+function StartScene.new(scene_manager, settings_state, input)
     local self = setmetatable({}, StartScene)
     self.scene_manager   = scene_manager
     self.settings_state  = settings_state
     self.esc_opens_settings = true
-    self.input = Input.new({ interact = { "e" } })
+    self._owns_input = (input == nil)
+    self.input = input or Input.new({ interact = { "e" } })
     return self
 end
 
@@ -25,10 +26,10 @@ function StartScene:on_exit()
 end
 
 function StartScene:update(dt)
-    self.input:update()
+    if self._owns_input then self.input:update() end
     if self.input:pressed("interact") then
         Sound.fade_music("menu", 0, 2)
-        self.scene_manager:switch(GameScene.new(self.scene_manager, self.settings_state))
+        self.scene_manager:switch(GameScene.new(self.scene_manager, self.settings_state, self.input))
     end
 end
 
@@ -40,7 +41,8 @@ function StartScene:draw()
     local font = love.graphics.getFont()
 
     local title  = "Normal Apple Farming"
-    local prompt = "Press E to start"
+    local key = (self.input.key_for and self.input:key_for("interact")) or "E"
+    local prompt = "Press " .. key:upper() .. " to start"
 
     local tw = font:getWidth(title)
     local pw = font:getWidth(prompt)

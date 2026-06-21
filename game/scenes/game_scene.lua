@@ -31,12 +31,13 @@ local WORLD_H = 1440
 local GameScene = {}
 GameScene.__index = GameScene
 
-function GameScene.new(scene_manager, settings_state)
+function GameScene.new(scene_manager, settings_state, input)
     local self = setmetatable({}, GameScene)
     self.drawer          = Drawer.new()
     self.camera          = Camera.new()
     self.scene_manager   = scene_manager
     self._settings_state = settings_state
+    self._ext_input      = input
     self._initialized    = false
     return self
 end
@@ -58,8 +59,25 @@ function GameScene:on_enter()
     self.wires     = {}
     self.wire_grid = {}
 
+    -- Input (set up early so it can be passed to sub-scenes)
+    if self._ext_input then
+        self.input = self._ext_input
+    else
+        self.input = Input.new({
+            move_up    = { "w", "up" },
+            move_down  = { "s", "down" },
+            move_left  = { "a", "left" },
+            move_right = { "d", "right" },
+            interact   = { "e" },
+            pickup     = { "f" },
+        })
+        if self._settings_state then
+            self.input._map = self._settings_state:key_map()
+        end
+    end
+
     -- Shop scene (created here so it can reference self)
-    self._shop_scene = ShopScene.new(self.game_state, self.scene_manager, self)
+    self._shop_scene = ShopScene.new(self.game_state, self.scene_manager, self, self.input)
 
     -- Fixtures
     local bx, by = WORLD_W / 2 - 300, WORLD_H / 2
@@ -76,7 +94,7 @@ function GameScene:on_enter()
     table.insert(self.items, Knife.new(cx,      cy + 120))
 
     -- Book: not in shop, spawns in world
-    local book_scene = BookScene.new(self, self.scene_manager)
+    local book_scene = BookScene.new(self, self.scene_manager, self.input)
     table.insert(self.items, Book.new(cx + 60, cy + 120, book_scene))
 
     -- Spawn 6 animals
@@ -89,17 +107,6 @@ function GameScene:on_enter()
 
     -- Player
     local px, py = WORLD_W / 2, WORLD_H / 2
-    self.input = Input.new({
-        move_up    = { "w", "up" },
-        move_down  = { "s", "down" },
-        move_left  = { "a", "left" },
-        move_right = { "d", "right" },
-        interact   = { "e" },
-        pickup     = { "f" },
-    })
-    if self._settings_state then
-        self.input._map = self._settings_state:key_map()
-    end
     self.player = Player.new(px, py, self.input)
     self.camera.x = px + 48
     self.camera.y = py + 48
@@ -111,7 +118,7 @@ function GameScene:on_enter()
     self.animal_info  = AnimalInfo.new()
     self.job_info     = JobInfo.new(self.game_state)
     self.money_info   = MoneyInfo.new(self.game_state)
-    self.actions_info = ActionsInfo.new(self._settings_state and self._settings_state.keybinds)
+    self.actions_info = ActionsInfo.new(self.input)
 
     -- Background tileset
     if love.filesystem.getInfo("assets/images/tileset.png") then

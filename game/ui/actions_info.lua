@@ -4,16 +4,23 @@ local ui       = require("game/ui")
 local ActionsInfo = {}
 ActionsInfo.__index = ActionsInfo
 
-local function key_label(keybinds, action)
-    local k = keybinds and keybinds[action] or action
+local function key_label(input, action)
+    if not input then return "[" .. action:upper() .. "]" end
+    local k = input.key_for and input:key_for(action)
+    if k == nil then k = action end
+    -- key_for returns "[A]" in gamepad mode (already bracketed)
+    -- key_for returns "e" in keyboard mode (needs brackets)
+    if k:sub(1,1) == "[" then
+        return k
+    end
     return "[" .. k:upper() .. "]"
 end
 
-function ActionsInfo.new(keybinds)
+function ActionsInfo.new(input)
     local self = setmetatable({}, ActionsInfo)
     self._nearby  = {}   -- list of nearby entity names (strings)
     self._held    = nil  -- currently held item/animal (or nil)
-    self._keybinds = keybinds or {}
+    self._input = input or {}
     return self
 end
 
@@ -30,22 +37,22 @@ function ActionsInfo:draw()
     -- E key hint
     local e_hint = ""
     if self._held then
-        e_hint = key_label(self._keybinds, "pickup") .. " Drop"
+        e_hint = key_label(self._input, "pickup") .. " Drop"
     elseif #self._nearby > 0 then
         local nearest = self._nearby[1]
         local label = nearest.name or nearest._type or "item"
-        e_hint = key_label(self._keybinds, "pickup") .. " Pick up " .. label
+        e_hint = key_label(self._input, "pickup") .. " Pick up " .. label
     else
-        e_hint = key_label(self._keybinds, "interact") .. " Interact"
+        e_hint = key_label(self._input, "interact") .. " Interact"
     end
 
     -- O key hint
     local o_hint = ""
     if self._held then
         if Detector.is_roll(self._held) then
-            o_hint = "  " .. key_label(self._keybinds, "interact") .. " Place wire"
+            o_hint = "  " .. key_label(self._input, "interact") .. " Place wire"
         elseif Detector.is_knife(self._held) then
-            o_hint = "  " .. key_label(self._keybinds, "interact") .. " Remove wires"
+            o_hint = "  " .. key_label(self._input, "interact") .. " Remove wires"
         end
     end
 
