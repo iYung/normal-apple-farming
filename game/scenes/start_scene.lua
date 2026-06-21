@@ -50,6 +50,28 @@ function StartScene:draw()
 
     love.graphics.print(title,  math.floor((VIEW_W - tw) / 2), math.floor(VIEW_H / 2 - fh - 8))
     love.graphics.print(prompt, math.floor((VIEW_W - pw) / 2), math.floor(VIEW_H / 2 + 8))
+
+    -- Controls hint row at the bottom
+    if self.input.key_for then
+        local function fmt(k)
+            if not k then return "?" end
+            if k:sub(1, 1) == "[" or k == "↑" or k == "↓" or k == "←" or k == "→" then return k end
+            return "[" .. k:upper() .. "]"
+        end
+        local ku = self.input:key_for("move_up")    or "?"
+        local kl = self.input:key_for("move_left")  or "?"
+        local kd = self.input:key_for("move_down")  or "?"
+        local kr = self.input:key_for("move_right") or "?"
+        local move_text   = ku .. "/" .. kl .. "/" .. kd .. "/" .. kr .. " Move"
+        local pickup_text = fmt(self.input:key_for("pickup"))   .. " Pickup"
+        local act_text    = fmt(self.input:key_for("interact")) .. " Interact"
+
+        local hint = move_text .. "   " .. pickup_text .. "   " .. act_text
+        local hw = font:getWidth(hint)
+        love.graphics.setColor(0.5, 0.5, 0.5, 1)
+        love.graphics.print(hint, math.floor((VIEW_W - hw) / 2), VIEW_H - fh - 14)
+        love.graphics.setColor(1, 1, 1, 1)
+    end
 end
 
 return StartScene
