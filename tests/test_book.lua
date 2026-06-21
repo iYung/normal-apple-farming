@@ -47,4 +47,18 @@ assert(b.sprite.x == 50, "sprite.x should track item.x after update")
 assert(b.sprite.y == 75, "sprite.y should track item.y after update")
 print("PASS: update syncs sprite position")
 
+-- ── book.png is RGBA (required for outline shader) ───────────────────────────
+-- PNG color type is at byte 26 (1-indexed): 6 = RGBA, 2 = RGB.
+-- The outline shader fires only on transparent pixels; an RGB image has no
+-- alpha channel and produces no outline.
+
+local f = io.open("assets/images/items/book.png", "rb")
+assert(f, "book.png must exist")
+local header = f:read(26)
+f:close()
+local color_type = header:byte(26)
+assert(color_type == 6,
+    "book.png must be RGBA (color type 6) so the outline shader can fire; got " .. tostring(color_type))
+print("PASS: book.png is RGBA")
+
 print("ALL TESTS PASSED")
