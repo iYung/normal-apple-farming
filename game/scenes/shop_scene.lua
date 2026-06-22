@@ -37,18 +37,20 @@ local ARROW_SIZE   = 60
 local ShopScene = {}
 ShopScene.__index = ShopScene
 
-function ShopScene.new(game_state, scene_manager, game_scene)
+function ShopScene.new(game_state, scene_manager, game_scene, input)
     local self = setmetatable({}, ShopScene)
     self.game_state    = game_state
     self.scene_manager = scene_manager
     self.game_scene    = game_scene
+    self._owns_input   = (input == nil)
     self.selected      = 1
     self.canvas = love.graphics.newCanvas(VIEW_W, VIEW_H)
-    self.input = Input.new({
-        left     = { "a", "left"  },
-        right    = { "d", "right" },
-        interact = { "e" },
-        cancel   = { "s", "down" },
+    self.input = input or Input.new({
+        move_left  = { "a", "left"  },
+        move_right = { "d", "right" },
+        move_down  = { "s", "down" },
+        interact   = { "e" },
+        cancel     = { "escape" },
     })
     return self
 end
@@ -59,19 +61,19 @@ end
 function ShopScene:on_exit() end
 
 function ShopScene:update(dt)
-    self.input:update()
+    if self._owns_input then self.input:update() end
     if self._skip_frame then
         self._skip_frame = false
         return
     end
 
-    if self.input:pressed("left") then
+    if self.input:pressed("move_left") then
         Sound.play("shop_navigate")
         self.selected = self.selected - 1
         if self.selected < 1 then self.selected = #CATALOGUE end
     end
 
-    if self.input:pressed("right") then
+    if self.input:pressed("move_right") then
         Sound.play("shop_navigate")
         self.selected = self.selected + 1
         if self.selected > #CATALOGUE then self.selected = 1 end
@@ -93,7 +95,7 @@ function ShopScene:update(dt)
         end
     end
 
-    if self.input:pressed("cancel") then
+    if self.input:pressed("cancel") or self.input:pressed("move_down") then
         self.scene_manager:switch(self.game_scene)
     end
 end

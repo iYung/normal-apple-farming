@@ -19,6 +19,35 @@ local function _all_bound(keybinds)
     return true
 end
 
+local function _joy_nav(input)
+    if not input or not input._joystick or not input._joystick:isConnected() then
+        return { up=false, down=false, left=false, right=false, confirm=false }
+    end
+    local joy = input._joystick
+    local ax = joy:getGamepadAxis("leftx")
+    local ay = joy:getGamepadAxis("lefty")
+    return {
+        up      = ay < -0.3 or joy:isGamepadDown("dpup"),
+        down    = ay >  0.3 or joy:isGamepadDown("dpdown"),
+        left    = ax < -0.3 or joy:isGamepadDown("dpleft"),
+        right   = ax >  0.3 or joy:isGamepadDown("dpright"),
+        confirm = joy:isGamepadDown("a"),
+    }
+end
+
+local function _visible_items(items, input)
+    if input and input._mode == "gamepad" then
+        local result = {}
+        for _, item in ipairs(items) do
+            if item ~= "Keybinds" then
+                result[#result + 1] = item
+            end
+        end
+        return result
+    end
+    return items
+end
+
 local W       = 1280
 local H       = 720
 local BTN_W   = 300
@@ -77,6 +106,16 @@ function SettingsMenu:open()
     self._prev_confirm = love.keyboard.isDown(kb.interact or "e")
                       or love.keyboard.isDown("return")
     self._prev_escape  = love.keyboard.isDown("escape")
+    -- Also snapshot gamepad state to prevent ghost-fire on open
+    local _jn = _joy_nav(self._input)
+    self._prev_up      = self._prev_up      or _jn.up
+    self._prev_down    = self._prev_down    or _jn.down
+    self._prev_left    = self._prev_left    or _jn.left
+    self._prev_right   = self._prev_right   or _jn.right
+    self._prev_confirm = self._prev_confirm or _jn.confirm
+    local joy = self._input and self._input._joystick
+    self._prev_escape = self._prev_escape
+        or (joy ~= nil and joy:isConnected() and joy:isGamepadDown("start"))
 end
 
 function SettingsMenu:close()
@@ -100,6 +139,15 @@ function SettingsMenu:update(dt)
         local confirm = love.keyboard.isDown(self._state.keybinds.interact or "e")
                      or love.keyboard.isDown("return")
         local escape  = love.keyboard.isDown("escape")
+
+        -- OR in gamepad nav for keybinds sub-screen
+        local _jn = _joy_nav(self._input)
+        up      = up      or _jn.up
+        down    = down    or _jn.down
+        confirm = confirm or _jn.confirm
+        local joy = self._input and self._input._joystick
+        escape = escape
+            or (joy ~= nil and joy:isConnected() and joy:isGamepadDown("start"))
 
         local sub_count = #_ACTION_LIST + 1
         if up and not self._prev_sub_up then
@@ -139,12 +187,50 @@ function SettingsMenu:update(dt)
                  or love.keyboard.isDown("return")
     local escape  = love.keyboard.isDown("escape")
 
+    -- OR in gamepad nav for main menu
+    local _jn = _joy_nav(self._input)
+    up      = up      or _jn.up
+    down    = down    or _jn.down
+    confirm = confirm or _jn.confirm
+    local joy = self._input and self._input._joystick
+    escape = escape
+        or (joy ~= nil and joy:isConnected() and joy:isGamepadDown("start"))
+
+    -- Clamp selected to visible items (in case mode changed while open)
+    local vis = _visible_items(ITEMS, self._input)
+    local selected_item = ITEMS[self.selected]
+    local selected_visible = false
+    for _, item in ipairs(vis) do
+        if item == selected_item then selected_visible = true; break end
+    end
+    if not selected_visible then
+        self.selected = 1
+    end
+
     if up and not self._prev_up then
-        self.selected = ((self.selected - 2) % #ITEMS) + 1
+        -- Navigate up through visible items
+        local cur_vis_idx = 1
+        for j, item in ipairs(vis) do
+            if item == ITEMS[self.selected] then cur_vis_idx = j; break end
+        end
+        local new_vis_idx = ((cur_vis_idx - 2) % #vis) + 1
+        -- Find ITEMS index for the new visible item
+        for k, v in ipairs(ITEMS) do
+            if v == vis[new_vis_idx] then self.selected = k; break end
+        end
         Sound.play("menu_navigate")
     end
     if down and not self._prev_down then
-        self.selected = (self.selected % #ITEMS) + 1
+        -- Navigate down through visible items
+        local cur_vis_idx = 1
+        for j, item in ipairs(vis) do
+            if item == ITEMS[self.selected] then cur_vis_idx = j; break end
+        end
+        local new_vis_idx = (cur_vis_idx % #vis) + 1
+        -- Find ITEMS index for the new visible item
+        for k, v in ipairs(ITEMS) do
+            if v == vis[new_vis_idx] then self.selected = k; break end
+        end
         Sound.play("menu_navigate")
     end
     if confirm and not self._prev_confirm then
@@ -167,6 +253,10 @@ function SettingsMenu:_confirm()
     if self.selected == 1 then
         self._state:toggle_fullscreen()
     elseif self.selected == 2 then
+        -- Guard: skip Keybinds in gamepad mode (not reachable via navigation, but defensive)
+        if self._input and self._input._mode == "gamepad" then
+            return
+        end
         self._subscreen = "keybinds"
         self._subscreen_selected = 1
         -- Snapshot so keys held at transition time don't immediately fire in the sub-screen
@@ -209,7 +299,25 @@ function SettingsMenu:keypressed(key)
     end
     self._state:set_keybind(self._capturing, key)
     self._input._map = self._state:key_map()
+    self._input._map.cancel = {"escape"}
     self._capturing = nil
+    return true
+end
+
+function SettingsMenu:gamepadpressed(button)
+    if button ~= "start" then return false end
+    if self._subscreen == "keybinds" and self._capturing == nil then
+        if _all_bound(self._state.keybinds) then
+            self._subscreen = nil
+            return true
+        end
+        return false
+    end
+    if self._capturing ~= nil then
+        self._capturing = nil
+        return true
+    end
+    self:close()
     return true
 end
 
@@ -281,10 +389,13 @@ function SettingsMenu:draw()
     love.graphics.rectangle("fill", 0, 0, W, H)
 
     love.graphics.setFont(self._font_btn)
-    local btn_y0 = H / 2 - (#ITEMS - 1) * BTN_GAP / 2 - BTN_H / 2
-    for i = 1, #ITEMS do
-        local y   = btn_y0 + (i - 1) * BTN_GAP
-        local img = i == self.selected and self._img_btn_sel or self._img_btn
+    local vis = _visible_items(ITEMS, self._input)
+    local btn_y0 = H / 2 - (#vis - 1) * BTN_GAP / 2 - BTN_H / 2
+    for j, item in ipairs(vis) do
+        local i = 0
+        for k, v in ipairs(ITEMS) do if v == item then i = k; break end end
+        local y   = btn_y0 + (j - 1) * BTN_GAP
+        local img = (i == self.selected) and self._img_btn_sel or self._img_btn
         love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(img, BTN_X, y)
 

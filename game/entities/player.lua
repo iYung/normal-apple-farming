@@ -1,6 +1,5 @@
 local Sprite    = require("core/lua/sprite")
 local SpriteSet = require("core/lua/spriteset")
-local Input     = require("core/lua/input")
 local Mapper    = require("game/systems/mapper")
 local Detector  = require("game/systems/detector")
 local Animal    = require("game/entities/animal")
@@ -24,14 +23,7 @@ function Player.new(x, y, input)
     self._anim_timer = 0
     self._anim_frame = 0
 
-    self.input = input or Input.new({
-        move_up    = { "w", "up" },
-        move_down  = { "s", "down" },
-        move_left  = { "a", "left" },
-        move_right = { "d", "right" },
-        interact   = { "e" },
-        pickup     = { "f" },
-    })
+    self.input = input
 
     -- Load sprites into a SpriteSet
     self._sprites = SpriteSet.new()
@@ -55,8 +47,6 @@ function Player:centre()
 end
 
 function Player:update(dt, scene)
-    self.input:update()
-
     -- Movement
     local vx, vy = 0, 0
     if self.input:is_down("move_left")  then vx = vx - SPEED end

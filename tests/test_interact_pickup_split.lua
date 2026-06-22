@@ -13,14 +13,18 @@ local scene  = ctx.sm.current
 local player = scene.player
 
 -- Use a dedicated HeadlessInput for the player, separate from ctx.input.
--- runner.tick calls ctx.input:update() and player:update() calls player.input:update().
--- If they were the same object the _pressed state would be wiped before the
--- player's input checks run.
+-- main.lua owns the update cycle: input:update() runs before scene_manager:update(dt).
+-- The local tick mirrors that: both inputs update before the scene processes them.
 local input = HeadlessInput.new()
 player.input = input
 
 local function tick(n)
-    runner.tick(ctx.input, ctx.sm, n)
+    n = n or 1
+    for _ = 1, n do
+        ctx.input:update()
+        input:update()
+        ctx.sm:update(1 / 60)
+    end
 end
 
 local function find_item(type_name)

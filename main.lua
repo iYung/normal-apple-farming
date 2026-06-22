@@ -29,12 +29,14 @@ local StartScene    = require("game/scenes/start_scene")
 local Save          = require("core/lua/save")
 local SettingsState = require("game/settings_state")
 local SettingsMenu  = require("game/scenes/settings_menu")
+local Input         = require("core/lua/input")
 
 local LOGICAL_W, LOGICAL_H = 1280, 720
 local canvas
 
 local manager
 local settings_menu
+local input
 
 function love.load()
     love.window.setIcon(love.image.newImageData("assets/images/icon.png"))
@@ -46,8 +48,25 @@ function love.load()
         and SettingsState.from_save(Save.read_settings())
         or  SettingsState.new()
 
+    -- Build the full action map from defaults + user settings
+    local base_map = {
+        move_up    = { "w", "up" },
+        move_down  = { "s", "down" },
+        move_left  = { "a", "left" },
+        move_right = { "d", "right" },
+        interact   = { "e" },
+        pickup     = { "f" },
+        cancel     = { "escape" },
+    }
+    -- Apply user keybinds (overrides defaults, but cancel stays fixed)
+    for action, keys in pairs(ss:key_map()) do
+        base_map[action] = keys
+    end
+    base_map.cancel = { "escape" }  -- always escape, not user-configurable
+    input = Input.new(base_map)
+
     manager = SceneManager.new(LOGICAL_W, LOGICAL_H)
-    manager:switch(StartScene.new(manager, ss))
+    manager:switch(StartScene.new(manager, ss, input))
     Sound.load({
         sfx_dir = "assets/sounds/",
         sfx = {
@@ -64,13 +83,11 @@ function love.load()
         },
     })
 
-    manager.current.input._map = ss:key_map()
-
     local function on_close()
         Save.write_settings(ss:to_save())
     end
 
-    settings_menu = SettingsMenu.new(ss, manager.current.input, on_close)
+    settings_menu = SettingsMenu.new(ss, input, on_close)
 end
 
 function love.update(dt)
@@ -78,6 +95,7 @@ function love.update(dt)
     if settings_menu and settings_menu.is_open then
         settings_menu:update(dt)
     else
+        input:update()
         manager:update(dt)
     end
 end
@@ -98,12 +116,45 @@ function love.draw()
 end
 
 function love.keypressed(key)
+    input._mode = "keyboard"
     if settings_menu and settings_menu:keypressed(key) then return end
     if key == "escape" and settings_menu and not settings_menu.is_open then
         if manager.current and manager.current.input then
             settings_menu._input = manager.current.input
         end
         settings_menu:open()
+    end
+end
+
+function love.gamepadpressed(joystick, button)
+    input._joystick = joystick
+    input._mode = "gamepad"
+    if settings_menu and settings_menu.is_open then
+        settings_menu:gamepadpressed(button)
+        return
+    end
+    if button == "start" then
+        if settings_menu and manager.current and manager.current.esc_opens_settings then
+            settings_menu:open()
+        end
+    end
+end
+
+function love.joystickadded(joystick)
+    if joystick:isGamepad() and input._joystick == nil then
+        input._joystick = joystick
+    end
+end
+
+function love.joystickremoved(joystick)
+    if joystick == input._joystick then
+        input._joystick = nil
+        for _, j in ipairs(love.joystick.getJoysticks()) do
+            if j:isGamepad() and j:isConnected() then
+                input._joystick = j
+                break
+            end
+        end
     end
 end
 

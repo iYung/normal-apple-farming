@@ -103,11 +103,18 @@ local function capture_hint(act)
     return table.concat(captured, "")
 end
 
-local keybinds = { interact = "e", pickup = "f" }
+local mock_input = {
+    _mode = "keyboard",
+    _map  = { interact = {"e"}, pickup = {"f"} },
+    key_for = function(self, action)
+        local keys = self._map[action]
+        return keys and keys[1]
+    end,
+}
 
 -- Test 6: ActionsInfo draws with nothing nearby and nothing held.
 -- Expect: interact key label "[E]" and "Interact" in hint.
-local act = ActionsInfo.new(keybinds)
+local act = ActionsInfo.new(mock_input)
 local hint = capture_hint(act)
 assert(hint:find("%[E%]"),       "Test 6a: expected [E] in hint, got: " .. hint)
 assert(hint:find("Interact"),    "Test 6b: expected 'Interact' in hint, got: " .. hint)
