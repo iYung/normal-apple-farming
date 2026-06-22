@@ -18,6 +18,7 @@ local ShopScene    = require("game/scenes/shop_scene")
 local GameOverScene = require("game/scenes/game_over_scene")
 local JobGenerator = require("game/systems/job_generator")
 local Detector     = require("game/systems/detector")
+local Mapper       = require("game/systems/mapper")
 local AnimalInfo   = require("game/ui/animal_info")
 local JobInfo      = require("game/ui/job_info")
 local MoneyInfo    = require("game/ui/money_info")
@@ -129,6 +130,9 @@ function GameScene:on_enter()
         self._bg_img  = img
         self._bg_quad = quad
     end
+    if love.filesystem.getInfo("assets/images/items/wire.png") then
+        self._wire_preview_img = love.graphics.newImage("assets/images/items/wire.png")
+    end
 end
 
 function GameScene:on_exit()
@@ -229,6 +233,21 @@ function GameScene:draw()
         love.graphics.draw(self._bg_img, self._bg_quad, 0, 0)
     end
     love.graphics.setColor(1, 1, 1, 1)
+
+    -- Wire placement preview
+    if Detector.is_roll(self.player.held_item) then
+        local tx, ty = Mapper.world_to_tile(self.player.x + self.player.w / 2, self.player.y + self.player.h / 2)
+        local occupied = Mapper.get(self.wire_grid, tx, ty) ~= nil
+        if self._wire_preview_img then
+            if occupied then
+                love.graphics.setColor(1, 0.3, 0.3, 0.5)
+            else
+                love.graphics.setColor(1, 1, 1, 0.5)
+            end
+            love.graphics.draw(self._wire_preview_img, tx * Mapper.TILE, ty * Mapper.TILE, 0, 48 / self._wire_preview_img:getWidth(), 48 / self._wire_preview_img:getHeight())
+            love.graphics.setColor(1, 1, 1, 1)
+        end
+    end
 
     -- Y-sort: collect wires, non-held items, animals, and player into one list
     -- sorted by bottom edge Y so entities lower on screen draw on top.
