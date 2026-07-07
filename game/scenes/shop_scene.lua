@@ -4,8 +4,10 @@ local Roll    = require("game/items/roll")
 local Knife   = require("game/items/knife")
 local Breeder = require("game/entities/breeder")
 local Rocket  = require("game/items/rocket")
-local CRT     = require("game/shaders/crt")
-local Fonts   = require("core/lua/fonts")
+local CRT      = require("game/shaders/crt")
+local Fonts    = require("core/lua/fonts")
+local MoneyInfo = require("game/ui/money_info")
+local ui        = require("game/ui")
 
 local _font_family = Fonts.from("assets/fonts/font.ttf")
 local font_name    = _font_family.new(32)
@@ -34,6 +36,14 @@ local CENTER_X     = 640
 local CENTER_Y     = 360
 local ARROW_SIZE   = 60
 
+local _KEY_DISPLAY = { escape="Esc", left="←", right="→", up="↑", down="↓", space="Space" }
+local function key_label(input, action)
+    local k = input:key_for(action)
+    if k == nil then return "[" .. action:upper() .. "]" end
+    if k:sub(1,1) == "[" then return k end
+    return "[" .. (_KEY_DISPLAY[k] or k:upper()) .. "]"
+end
+
 local ShopScene = {}
 ShopScene.__index = ShopScene
 
@@ -52,6 +62,7 @@ function ShopScene.new(game_state, scene_manager, game_scene, input)
         interact   = { "e" },
         cancel     = { "escape" },
     })
+    self.money_info = MoneyInfo.new(game_state)
     return self
 end
 
@@ -204,6 +215,22 @@ function ShopScene:draw()
     CRT.clear()
 
     love.graphics.setFont(prev_font)
+    love.graphics.setColor(1, 1, 1, 1)
+
+    -- money HUD (screen space, on top of CRT canvas)
+    self.money_info:draw()
+
+    -- controls HUD
+    local hint = key_label(self.input,"move_left") .. "/" .. key_label(self.input,"move_right") .. " Browse  " .. key_label(self.input,"interact") .. " Buy  " .. key_label(self.input,"cancel") .. "/" .. key_label(self.input,"move_down") .. " Leave"
+    local PAD    = 14
+    local margin = 10
+    local font   = love.graphics.getFont()
+    local box_h  = 20 + PAD * 2
+    local box_x  = margin
+    local box_y  = 720 - margin - box_h
+    ui.draw_hud_box({hint}, font, margin)
+    love.graphics.setColor(0.1, 0.1, 0.1, 1)
+    love.graphics.print(hint, box_x + PAD, box_y + PAD)
     love.graphics.setColor(1, 1, 1, 1)
 end
 

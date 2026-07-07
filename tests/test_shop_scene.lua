@@ -121,4 +121,66 @@ do
     print("PASS: cancel returns to game_scene without buying")
 end
 
+-- ── HUD: draw smoke test ─────────────────────────────────────────────────────
+
+do
+    local scene = ShopScene.new(make_gs(50), make_sm(), make_game_scene(make_player()))
+    scene:draw()
+    print("PASS: draw() runs without error")
+end
+
+-- ── HUD: controls hint content ───────────────────────────────────────────────
+
+do
+    local mock_input = {
+        _mode = "keyboard",
+        _map  = {
+            move_left  = { "a", "left"   },
+            move_right = { "d", "right"  },
+            move_down  = { "s", "down"   },
+            interact   = { "e" },
+            cancel     = { "escape" },
+        },
+        key_for = function(self, action)
+            local keys = self._map[action]
+            return keys and keys[1]
+        end,
+    }
+
+    local scene = ShopScene.new(make_gs(50), make_sm(), make_game_scene(make_player()), mock_input)
+
+    local printed = {}
+    local orig = love.graphics.print
+    love.graphics.print = function(text, ...) table.insert(printed, tostring(text)) end
+    scene:draw()
+    love.graphics.print = orig
+
+    local hint = table.concat(printed, " ")
+
+    assert(hint:find("%[A%]"),    "controls hint should contain [A] (move_left), got: " .. hint)
+    print("PASS: controls hint contains move_left key label")
+
+    assert(hint:find("%[D%]"),    "controls hint should contain [D] (move_right), got: " .. hint)
+    print("PASS: controls hint contains move_right key label")
+
+    assert(hint:find("%[E%]"),    "controls hint should contain [E] (interact/buy), got: " .. hint)
+    print("PASS: controls hint contains interact key label")
+
+    assert(hint:find("%[Esc%]"),  "controls hint should contain [Esc] (cancel, normalized from 'escape'), got: " .. hint)
+    print("PASS: controls hint normalizes 'escape' to [Esc]")
+
+    assert(hint:find("%[S%]"),    "controls hint should contain [S] (move_down), got: " .. hint)
+    print("PASS: controls hint contains move_down key label")
+
+    assert(hint:find("Browse"),   "controls hint should contain 'Browse', got: " .. hint)
+    assert(hint:find("Buy"),      "controls hint should contain 'Buy', got: " .. hint)
+    assert(hint:find("Leave"),    "controls hint should contain 'Leave', got: " .. hint)
+    print("PASS: controls hint contains Browse, Buy, Leave labels")
+
+    -- Also verify money is printed (MoneyInfo draw)
+    assert(hint:find("50") or hint:find("%$"),
+        "draw output should include money value or $ sign, got: " .. hint)
+    print("PASS: money HUD prints money value")
+end
+
 print("ALL TESTS PASSED")
