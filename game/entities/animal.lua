@@ -153,8 +153,8 @@ function Animal:draw()
     local top_y = by + (#self._body_sprites - 1) * BODY_OFFSET
 
     -- Sync leg and face positions
-    self._legs_still.x = bx; self._legs_still.y = by
-    self._legs_walk.x  = bx; self._legs_walk.y  = by
+    self._legs_still.x = bx; self._legs_still.y = by - 1
+    self._legs_walk.x  = bx; self._legs_walk.y  = by - 1
     self._face_sprite.x = bx; self._face_sprite.y = top_y
 
     -- Sync body segment positions
