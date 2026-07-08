@@ -53,4 +53,39 @@ assert(b:is_full(), "parents should remain in slots after breeding")
 assert(b._breeding == true, "breeding flag should remain set for continuous breeding")
 print("PASS: parents remain after breeding")
 
+-- Test 7: grey backing (_bar_back) draws every frame regardless of slot
+-- occupancy / breeding state; progress fill (_bar_fill) only draws while
+-- breeding is active.
+local b2 = Breeder.new(200, 200)
+-- Headless stub shaders don't implement :send(); stub it so draw() can run
+-- through the sway-shader path once breeding starts (2 slots).
+b2._sway_shader.send = function() end
+
+local bar_back_calls = 0
+local bar_fill_calls = 0
+b2._bar_back.draw = function() bar_back_calls = bar_back_calls + 1 end
+b2._bar_fill.draw = function() bar_fill_calls = bar_fill_calls + 1 end
+
+-- 0 slots (empty)
+b2:draw()
+assert(bar_back_calls == 1, "grey backing should draw with 0 animals in slot")
+assert(bar_fill_calls == 0, "progress fill should not draw when not breeding (0 slots)")
+
+-- 1 slot (not yet breeding)
+local b2_a1 = make_animal()
+b2:try_add(b2_a1)
+b2:draw()
+assert(bar_back_calls == 2, "grey backing should draw with 1 animal in slot")
+assert(bar_fill_calls == 0, "progress fill should not draw when not breeding (1 slot)")
+
+-- 2 slots (breeding)
+local b2_a2 = make_animal()
+b2:try_add(b2_a2)
+assert(b2._breeding == true, "breeder should be breeding with 2 animals")
+b2:draw()
+assert(bar_back_calls == 3, "grey backing should draw with 2 animals in slot (breeding)")
+assert(bar_fill_calls == 1, "progress fill should draw when breeding (2 slots)")
+
+print("PASS: grey backing draws unconditionally across all slot states")
+
 print("ALL TESTS PASSED")
