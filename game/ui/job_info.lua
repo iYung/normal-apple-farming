@@ -52,10 +52,10 @@ function JobInfo:draw()
 
             for _, goal in ipairs(job.goals) do
                 if goal._type == "speed" then
-                    local sym = goal.exceed and "\xe2\x89\xa5" or "\xe2\x89\xa4"
-                    love.graphics.print("Speed " .. sym .. " " .. goal.threshold, panel_x + PAD, cy)
+                    local word = goal.exceed and "greater than" or "less than"
+                    love.graphics.print("Speed " .. word .. " " .. goal.threshold, panel_x + PAD, cy)
                 elseif goal._type == "height" then
-                    love.graphics.print("Height \xe2\x89\xa5 " .. goal.value, panel_x + PAD, cy)
+                    love.graphics.print("Height greater than " .. goal.value, panel_x + PAD, cy)
                 elseif goal._type == "personality" then
                     love.graphics.print("Trait: " .. goal.value, panel_x + PAD, cy)
                 elseif goal._type == "color" then

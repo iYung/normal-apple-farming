@@ -7,7 +7,7 @@ An animal breeding game built in Love2D — a port of a Godot prototype. Breed a
 You play as a farmer who:
 - Catches and carries animals around a fenced field
 - Places animals into the **Breeder** (two at a time) to produce offspring with blended traits
-- Sells animals at the **Sell Bin** to complete customer **Jobs** (e.g. "animal with speed ≥ 60 and calm personality")
+- Sells animals at the **Sell Bin** to complete customer **Jobs** (e.g. "animal with speed greater than 60 and calm personality")
 - Earns money to buy Wire Rolls, Knives, Breeders, and a **Rocket** from the **Shop**
 - Lays wire fences to redirect wandering animals
 
