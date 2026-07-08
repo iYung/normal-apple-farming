@@ -103,6 +103,32 @@ local function capture_hint(act)
     return table.concat(captured, "")
 end
 
+-- Test 5h: JobInfo speed goal (exceed) uses plain-English wording, not the
+-- old UTF-8 ≥/≤ symbols.
+gs.active_jobs = {}
+local job_speed_exceed = JobData.Job.new({ JobData.Goal.speed(50, true) }, 30)
+table.insert(gs.active_jobs, job_speed_exceed)
+local hint = capture_hint(ji)
+assert(hint:find("Speed greater than 50", 1, true), "Test 5h: expected 'Speed greater than 50' in hint, got: " .. hint)
+assert(not hint:find("\xe2\x89", 1, true), "Test 5h: expected no leftover UTF-8 comparison symbol in hint, got: " .. hint)
+print("PASS: JobInfo speed-exceed goal uses 'Speed greater than' wording")
+
+-- Test 5i: JobInfo speed goal (under) uses plain-English wording.
+gs.active_jobs = {}
+local job_speed_under = JobData.Job.new({ JobData.Goal.speed(80, false) }, 12)
+table.insert(gs.active_jobs, job_speed_under)
+hint = capture_hint(ji)
+assert(hint:find("Speed less than 80", 1, true), "Test 5i: expected 'Speed less than 80' in hint, got: " .. hint)
+print("PASS: JobInfo speed-under goal uses 'Speed less than' wording")
+
+-- Test 5j: JobInfo height goal uses plain-English wording.
+gs.active_jobs = {}
+local job_height = JobData.Job.new({ JobData.Goal.height(3) }, 20)
+table.insert(gs.active_jobs, job_height)
+hint = capture_hint(ji)
+assert(hint:find("Height greater than 3", 1, true), "Test 5j: expected 'Height greater than 3' in hint, got: " .. hint)
+print("PASS: JobInfo height goal uses 'Height greater than' wording")
+
 local mock_input = {
     _mode = "keyboard",
     _map  = { interact = {"e"}, pickup = {"f"} },
