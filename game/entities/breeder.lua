@@ -127,9 +127,12 @@ function Breeder:draw()
         body = self._sprite_two
     end
 
-    -- Draw progress bar behind the body sprite (visible through the hole in the image)
+    -- Grey backing is always visible through the hole in the body sprite image,
+    -- regardless of slot occupancy, so it never looks see-through.
+    self._bar_back:draw()
+
+    -- Progress fill on top of the backing only makes sense while breeding.
     if self._breeding then
-        self._bar_back:draw()
         self._bar_fill.scale_x = progress
         self._bar_fill:draw()
     end
