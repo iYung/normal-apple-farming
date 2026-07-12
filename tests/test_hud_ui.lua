@@ -180,15 +180,19 @@ assert(hint:find("%[F%]"),   "Test 9a: expected [F] in hint, got: " .. hint)
 assert(hint:find("Pick up"), "Test 9b: expected 'Pick up' in hint, got: " .. hint)
 print("PASS: ActionsInfo nearby entity → pickup hint")
 
--- Test 10: ActionsInfo with shop nearby (interact target set, not carriable).
--- Expect: "Open Shop" hint, and no "Pick up" hint since the shop isn't carriable.
+-- Test 10: ActionsInfo with shop nearby (both interact target and pickup entity,
+-- since the shop is carriable). Expect: both "Open Shop" and "Pick up Shop" hints,
+-- interact hint listed first.
 act:set_held(nil)
-act:set_nearby({})
 act:set_interact_target({ _type = "shop_item", name = "Shop" })
+act:set_nearby({ { _type = "shop_item", name = "Shop", held = false, x = 0, y = 0, w = 96, h = 96 } })
 hint = capture_hint(act)
 assert(hint:find("Open Shop", 1, true),     "Test 10a: expected 'Open Shop' in hint, got: " .. hint)
-assert(not hint:find("Pick up", 1, true),   "Test 10b: expected no 'Pick up' in hint, got: " .. hint)
-print("PASS: ActionsInfo shop-only nearby → interact hint, no pickup hint")
+assert(hint:find("Pick up Shop", 1, true),  "Test 10b: expected 'Pick up Shop' in hint, got: " .. hint)
+local open_idx = hint:find("Open Shop", 1, true)
+local pickup_shop_idx = hint:find("Pick up Shop", 1, true)
+assert(open_idx < pickup_shop_idx, "Test 10c: expected 'Open Shop' before 'Pick up Shop', got: " .. hint)
+print("PASS: ActionsInfo shop nearby → interact + pickup hints, interact first")
 
 -- Test 11: ActionsInfo with book nearby (both interact target and pickup entity).
 -- Expect: both "Read Book" and "Pick up Book" hints, interact hint listed first.
@@ -215,6 +219,19 @@ local launch_idx = hint:find("Launch Rocket", 1, true)
 local pickup_rocket_idx = hint:find("Pick up Rocket", 1, true)
 assert(launch_idx < pickup_rocket_idx, "Test 12c: expected 'Launch Rocket' before 'Pick up Rocket', got: " .. hint)
 print("PASS: ActionsInfo rocket nearby → interact + pickup hints, interact first")
+
+-- Test 13: ActionsInfo with an interact target but nothing in the pickup-nearby list.
+-- Every current interactable (book/shop/rocket) is now also carriable, so this
+-- combination doesn't occur in real gameplay today, but ActionsInfo's own contract
+-- still supports it (interact_target and nearby are independent inputs) — this locks
+-- in that the interact-only rendering path keeps working.
+act:set_held(nil)
+act:set_interact_target({ _type = "book", name = "Book" })
+act:set_nearby({})
+hint = capture_hint(act)
+assert(hint:find("Read Book", 1, true),   "Test 13a: expected 'Read Book' in hint, got: " .. hint)
+assert(not hint:find("Pick up", 1, true), "Test 13b: expected no 'Pick up' in hint, got: " .. hint)
+print("PASS: ActionsInfo interact target with empty nearby → interact hint only")
 
 act:set_held(nil)
 act:set_interact_target(nil)
