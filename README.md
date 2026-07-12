@@ -21,7 +21,7 @@ Animals have four heritable traits: **speed**, **color** (RGB), **height**, and 
 |-----|--------|
 | WASD / Arrow keys | Move player |
 | F | Pick up / drop animal or item |
-| E | Open shop (near shop counter); use held item — hold to place wire with Roll or remove wire with Knife |
+| E | Interact — open shop, read the book, or launch the rocket (near each, respectively); use held item — hold to place wire with Roll or remove wire with Knife |
 | ESC | Open / close settings menu |
 
 Controls can be rebound in the settings menu. Settings (keybinds, fullscreen) persist between sessions.
@@ -31,7 +31,7 @@ Controls can be rebound in the settings menu. Settings (keybinds, fullscreen) pe
 | Button | Action |
 |--------|--------|
 | Left stick / D-pad | Move player |
-| A | Interact (open shop; use held item) |
+| A | Interact (open shop, read book, launch rocket; use held item) |
 | Y | Pick up / drop animal or item |
 | B | Cancel / back (exit shop, close menu) |
 | Start | Open / close settings menu |

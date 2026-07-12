@@ -205,7 +205,7 @@ function GameScene:update(dt)
         end
     end
     for _, it in ipairs(self.items) do
-        if not it.held then
+        if not it.held and it.carriable then
             local dx = (it.x + it.w/2) - (self.player.x + self.player.w/2)
             local dy = (it.y + it.h/2) - (self.player.y + self.player.h/2)
             if dx*dx + dy*dy <= 64*64 then
@@ -213,8 +213,18 @@ function GameScene:update(dt)
             end
         end
     end
+
+    local interactables = {}
+    for _, it in ipairs(self.items) do
+        if not it.held and Detector.is_interactable(it) then
+            table.insert(interactables, it)
+        end
+    end
+    local nearest_interactable = Detector.nearest(self.player, interactables, 64)
+
     self.actions_info:set_nearby(nearby)
     self.actions_info:set_held(self.player.held_item)
+    self.actions_info:set_interact_target(nearest_interactable)
 
     if not Sound.is_music_playing(self._bg_list[self._bg_index]) then
         self._bg_index = (self._bg_index % #self._bg_list) + 1

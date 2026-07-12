@@ -41,12 +41,8 @@ function Detector.is_rocket(e)
     return e ~= nil and e._type == "rocket"
 end
 
-function Detector.can_pickup(e)
-    if e == nil then return false end
-    return e._type == "animal"
-        or e._type == "roll"
-        or e._type == "knife"
-        or e._type == "rocket"
+function Detector.is_interactable(e)
+    return e ~= nil and (e._type == "book" or e._type == "shop_item" or e._type == "rocket")
 end
 
 -- Geometry helpers
