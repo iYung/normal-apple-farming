@@ -26,6 +26,7 @@ function Sound.load(manifest)
             src:setVolume(autoplay and _music_volume or 0)
             _music_tracks[name] = {
                 src            = src,
+                group          = track.group,
                 fade_vol       = 1,
                 fade_target    = 1,
                 fade_rate      = 0,
@@ -98,9 +99,25 @@ function Sound.update(dt)
     end
 end
 
+local function _claim_group(name)
+    local claimant = _music_tracks[name]
+    if not claimant or not claimant.group then return end
+    for other_name, entry in pairs(_music_tracks) do
+        if other_name ~= name and entry.group == claimant.group then
+            entry.src:stop()
+            entry.playing_intent = false
+            entry.fade_vol       = 1
+            entry.fade_target    = 1
+            entry.fade_rate      = 0
+            entry.stop_on_done   = false
+        end
+    end
+end
+
 function Sound.play_music(name)
     local entry = _music_tracks[name]
     if entry then
+        _claim_group(name)
         entry.fade_vol = 1
         entry.fade_target = 1
         entry.fade_rate = 0
@@ -114,11 +131,14 @@ end
 function Sound.fade_music(name, target_vol, duration)
     local entry = _music_tracks[name]
     if entry then
-        if target_vol > 0 and not entry.src:isPlaying() then
-            entry.fade_vol = 0
-            entry.src:setVolume(0)
-            entry.src:play()
-            entry.playing_intent = true
+        if target_vol > 0 then
+            _claim_group(name)
+            if not entry.src:isPlaying() then
+                entry.fade_vol = 0
+                entry.src:setVolume(0)
+                entry.src:play()
+                entry.playing_intent = true
+            end
         end
         entry.fade_target = target_vol
         entry.fade_rate = (target_vol - entry.fade_vol) / duration
@@ -148,21 +168,9 @@ function Sound.play_random_music(names, fade_duration)
     end
     if #valid == 0 then return end
 
-    -- Stop any of the valid tracks that are currently playing
-    for _, name in ipairs(valid) do
-        local entry = _music_tracks[name]
-        if entry.src:isPlaying() then
-            entry.src:stop()
-            entry.playing_intent = false
-            entry.fade_vol = 1
-            entry.fade_target = 1
-            entry.fade_rate = 0
-            entry.stop_on_done = false
-        end
-    end
-
     -- Pick one at random and fade it in
     local picked = valid[math.random(#valid)]
+    _claim_group(picked)
     Sound.fade_music(picked, 1, fade_duration)
 end
 

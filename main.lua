@@ -76,10 +76,10 @@ function love.load()
         },
         music = {
             menu = { path = "assets/music/menu.mp3",         autoplay = false },
-            bg1  = { path = "assets/music/background.mp3",  looping = false },
-            bg2  = { path = "assets/music/background2.mp3", looping = false },
-            bg3  = { path = "assets/music/background3.mp3", looping = false },
-            bg4  = { path = "assets/music/background4.mp3", looping = false },
+            bg1  = { path = "assets/music/background.mp3",  looping = false, group = "bg" },
+            bg2  = { path = "assets/music/background2.mp3", looping = false, group = "bg" },
+            bg3  = { path = "assets/music/background3.mp3", looping = false, group = "bg" },
+            bg4  = { path = "assets/music/background4.mp3", looping = false, group = "bg" },
         },
     })
 

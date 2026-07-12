@@ -12,10 +12,10 @@ local MANIFEST = {
     },
     music = {
         menu = { path = "assets/music/menu.mp3",         autoplay = true  },
-        bg1  = { path = "assets/music/background.mp3",  looping = false  },
-        bg2  = { path = "assets/music/background2.mp3", looping = false  },
-        bg3  = { path = "assets/music/background3.mp3", looping = false  },
-        bg4  = { path = "assets/music/background4.mp3", looping = false  },
+        bg1  = { path = "assets/music/background.mp3",  looping = false, group = "bg" },
+        bg2  = { path = "assets/music/background2.mp3", looping = false, group = "bg" },
+        bg3  = { path = "assets/music/background3.mp3", looping = false, group = "bg" },
+        bg4  = { path = "assets/music/background4.mp3", looping = false, group = "bg" },
     },
 }
 
@@ -327,6 +327,196 @@ do
     love.audio.newSource    = orig_newSource
     package.loaded["core/lua/sound"] = nil
     print("PASS: on_focus(false) does not replay any tracks")
+end
+
+-- Regression: play_music() claims its "bg" group and clears playing_intent (and
+-- stops the source) of another same-group track even when that track's source is
+-- already NOT playing (isPlaying()==false) — this is the actual focus-loss bug:
+-- the stale track's playing_intent stayed true after its source had already
+-- stopped/suspended on its own, with nothing to clear the intent. A fix that only
+-- handles the isPlaying()==true case would not catch this.
+do
+    local orig_getInfo   = love.filesystem.getInfo
+    local orig_newSource = love.audio.newSource
+    local play_calls = 0
+    local bg1_stop_calls = 0
+
+    love.filesystem.getInfo = function(p)
+        local music_files = {
+            ["assets/music/background.mp3"]  = true,
+            ["assets/music/background2.mp3"] = true,
+        }
+        return music_files[p] or nil
+    end
+    love.audio.newSource = function(path, t)
+        local src = orig_newSource(path, t)
+        src.play = function(self) play_calls = play_calls + 1 end
+        if path == "assets/music/background.mp3" then
+            src.stop = function(self) bg1_stop_calls = bg1_stop_calls + 1 end
+        end
+        return src
+    end
+
+    package.loaded["core/lua/sound"] = nil
+    local S = require("core/lua/sound")
+    S.load(MANIFEST)
+
+    -- bg1: playing_intent=true, but its source's isPlaying() is already false
+    -- (the stub always reports false) — exactly the stale state the focus-loss
+    -- bug leaves behind.
+    S.play_music("bg1")
+
+    -- bg2 claims the "bg" group.
+    S.play_music("bg2")
+    assert(bg1_stop_calls == 1, "expected bg1's source to be stop()'d when bg2 claims the group, got " .. bg1_stop_calls)
+
+    -- Prove bg1 is no longer eligible to resume: only bg2 should replay on focus.
+    play_calls = 0
+    S.on_focus(true)
+    assert(play_calls == 1, "expected only bg2 to replay on focus after bg2 claimed the group, got " .. play_calls)
+
+    love.filesystem.getInfo = orig_getInfo
+    love.audio.newSource    = orig_newSource
+    package.loaded["core/lua/sound"] = nil
+    print("PASS: play_music() claims group and clears stale playing_intent even when isPlaying() was already false")
+end
+
+-- Test: play_music() also claims its group and stops another same-group track when
+-- that track's source is genuinely still playing (isPlaying()==true) — the "easy"
+-- case that the old play_random_music stop-loop already handled correctly.
+do
+    local orig_getInfo   = love.filesystem.getInfo
+    local orig_newSource = love.audio.newSource
+    local bg1_stop_calls = 0
+    local bg1_src
+
+    love.filesystem.getInfo = function(p)
+        local music_files = {
+            ["assets/music/background.mp3"]  = true,
+            ["assets/music/background2.mp3"] = true,
+        }
+        return music_files[p] or nil
+    end
+    love.audio.newSource = function(path, t)
+        local src = orig_newSource(path, t)
+        if path == "assets/music/background.mp3" then
+            src._playing = false
+            src.stop = function(self)
+                bg1_stop_calls = bg1_stop_calls + 1
+                self._playing = false
+            end
+            src.isPlaying = function(self) return self._playing end
+            bg1_src = src
+        end
+        return src
+    end
+
+    package.loaded["core/lua/sound"] = nil
+    local S = require("core/lua/sound")
+    S.load(MANIFEST)
+
+    S.play_music("bg1")
+    bg1_src._playing = true -- simulate a genuinely still-playing source
+
+    S.play_music("bg2")
+    assert(bg1_stop_calls == 1, "expected bg1's genuinely-playing source to be stop()'d when bg2 claims the group, got " .. bg1_stop_calls)
+    assert(bg1_src:isPlaying() == false, "expected bg1 to have stopped playing after bg2 claimed the group")
+
+    love.filesystem.getInfo = orig_getInfo
+    love.audio.newSource    = orig_newSource
+    package.loaded["core/lua/sound"] = nil
+    print("PASS: play_music() claims group and stops a genuinely-playing same-group track")
+end
+
+-- Test: fade_music(name, target_vol>0, duration) also claims its group — same
+-- exclusivity guarantee as play_music(), covering the other call site described
+-- in the design doc (claiming only happens when target_vol > 0).
+do
+    local orig_getInfo   = love.filesystem.getInfo
+    local orig_newSource = love.audio.newSource
+    local play_calls = 0
+    local bg1_stop_calls = 0
+
+    love.filesystem.getInfo = function(p)
+        local music_files = {
+            ["assets/music/background.mp3"]  = true,
+            ["assets/music/background3.mp3"] = true,
+        }
+        return music_files[p] or nil
+    end
+    love.audio.newSource = function(path, t)
+        local src = orig_newSource(path, t)
+        src.play = function(self) play_calls = play_calls + 1 end
+        if path == "assets/music/background.mp3" then
+            src.stop = function(self) bg1_stop_calls = bg1_stop_calls + 1 end
+        end
+        return src
+    end
+
+    package.loaded["core/lua/sound"] = nil
+    local S = require("core/lua/sound")
+    S.load(MANIFEST)
+
+    -- bg1: stale playing_intent=true (isPlaying() already false), as above.
+    S.play_music("bg1")
+
+    -- bg3 claims the "bg" group via fade_music, not play_music.
+    S.fade_music("bg3", 1, 2)
+    assert(bg1_stop_calls == 1, "expected fade_music(bg3, 1, ...) to stop bg1's source, got " .. bg1_stop_calls)
+
+    play_calls = 0
+    S.on_focus(true)
+    assert(play_calls == 1, "expected only bg3 to replay on focus after fade_music claimed the group, got " .. play_calls)
+
+    love.filesystem.getInfo = orig_getInfo
+    love.audio.newSource    = orig_newSource
+    package.loaded["core/lua/sound"] = nil
+    print("PASS: fade_music() with target_vol>0 also claims group and clears other tracks' playing_intent")
+end
+
+-- Test: claiming the "bg" group never touches "menu" — it is left ungrouped and
+-- must remain eligible to resume independently of any bg-group claim.
+do
+    local orig_getInfo   = love.filesystem.getInfo
+    local orig_newSource = love.audio.newSource
+    local play_calls = 0
+    local menu_stop_calls = 0
+
+    love.filesystem.getInfo = function(p)
+        local music_files = {
+            ["assets/music/menu.mp3"]        = true,
+            ["assets/music/background.mp3"]  = true,
+            ["assets/music/background2.mp3"] = true,
+        }
+        return music_files[p] or nil
+    end
+    love.audio.newSource = function(path, t)
+        local src = orig_newSource(path, t)
+        src.play = function(self) play_calls = play_calls + 1 end
+        if path == "assets/music/menu.mp3" then
+            src.stop = function(self) menu_stop_calls = menu_stop_calls + 1 end
+        end
+        return src
+    end
+
+    package.loaded["core/lua/sound"] = nil
+    local S = require("core/lua/sound")
+    S.load(MANIFEST) -- menu autoplay=true sets its playing_intent=true
+
+    S.play_music("bg1")
+    S.play_music("bg2") -- bg2 claims the "bg" group; menu is ungrouped
+
+    assert(menu_stop_calls == 0, "expected menu (ungrouped) to never be stop()'d by a bg-group claim, got " .. menu_stop_calls)
+
+    -- menu should still be eligible to resume on focus, alongside bg2.
+    play_calls = 0
+    S.on_focus(true)
+    assert(play_calls == 2, "expected both menu and bg2 to replay on focus (menu untouched by bg claim), got " .. play_calls)
+
+    love.filesystem.getInfo = orig_getInfo
+    love.audio.newSource    = orig_newSource
+    package.loaded["core/lua/sound"] = nil
+    print("PASS: claiming the \"bg\" group does not affect the ungrouped \"menu\" track")
 end
 
 print("ALL TESTS PASSED")
