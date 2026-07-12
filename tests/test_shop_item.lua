@@ -1,5 +1,5 @@
 -- test_shop_item.lua
--- Verifies ShopItem: non-carriable flag, interact guard on held item,
+-- Verifies ShopItem: carriable flag, interact guard on held item,
 -- scene switch when hands are empty, and nil-safe scene_manager path.
 
 local ShopItem = require("game/items/shop_item")
@@ -16,7 +16,7 @@ end
 
 local item = ShopItem.new(100, 200, mock_shop_scene)
 
-assert(item.carriable == false, "ShopItem must not be carriable")
+assert(item.carriable == true, "ShopItem must be carriable")
 assert(item.sellable  == false, "ShopItem must not be sellable")
 assert(item.name      == "Shop", "ShopItem name should be 'Shop'")
 assert(item.shop_scene == mock_shop_scene, "ShopItem should hold shop_scene ref")

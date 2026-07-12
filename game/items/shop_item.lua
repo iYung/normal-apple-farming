@@ -7,7 +7,7 @@ function ShopItem.new(x, y, shop_scene)
     local self = Item.new(x, y, "Shop", "assets/images/shop/shop.png", 96, 96)
     setmetatable(self, ShopItem)
     self._type      = "shop_item"
-    self.carriable  = false
+    self.carriable  = true
     self.sellable   = false
     self.shop_scene = shop_scene
     return self

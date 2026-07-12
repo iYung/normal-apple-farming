@@ -20,6 +20,7 @@ function ActionsInfo.new(input)
     local self = setmetatable({}, ActionsInfo)
     self._nearby  = {}   -- list of nearby entity names (strings)
     self._held    = nil  -- currently held item/animal (or nil)
+    self._interact_target = nil  -- nearest interactable entity (or nil)
     self._input = input or {}
     return self
 end
@@ -33,17 +34,44 @@ function ActionsInfo:set_held(item_or_nil)
     self._held = item_or_nil
 end
 
+function ActionsInfo:set_interact_target(entity_or_nil)
+    self._interact_target = entity_or_nil
+end
+
 function ActionsInfo:draw()
     -- E key hint
     local e_hint = ""
     if self._held then
         e_hint = key_label(self._input, "pickup") .. " Drop"
-    elseif #self._nearby > 0 then
-        local nearest = self._nearby[1]
-        local label = nearest.name or nearest._type or "item"
-        e_hint = key_label(self._input, "pickup") .. " Pick up " .. label
     else
-        e_hint = key_label(self._input, "interact") .. " Interact"
+        local interact_hint = ""
+        if Detector.is_interactable(self._interact_target) then
+            local label
+            local t = self._interact_target._type
+            if t == "book" then label = "Read Book"
+            elseif t == "shop_item" then label = "Open Shop"
+            elseif t == "rocket" then label = "Launch Rocket"
+            else label = "Interact"
+            end
+            interact_hint = key_label(self._input, "interact") .. " " .. label
+        end
+
+        local pickup_hint = ""
+        if #self._nearby > 0 then
+            local nearest = self._nearby[1]
+            local label = nearest.name or nearest._type or "item"
+            pickup_hint = key_label(self._input, "pickup") .. " Pick up " .. label
+        end
+
+        if interact_hint ~= "" and pickup_hint ~= "" then
+            e_hint = interact_hint .. "  " .. pickup_hint
+        elseif interact_hint ~= "" then
+            e_hint = interact_hint
+        elseif pickup_hint ~= "" then
+            e_hint = pickup_hint
+        else
+            e_hint = key_label(self._input, "interact") .. " Interact"
+        end
     end
 
     -- O key hint
