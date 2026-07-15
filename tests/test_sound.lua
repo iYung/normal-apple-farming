@@ -519,4 +519,84 @@ do
     print("PASS: claiming the \"bg\" group does not affect the ungrouped \"menu\" track")
 end
 
+-- Test: fade_music_group(group, 0, duration) fades out a track that is actually
+-- playing in that group (playing_intent==true) and, once the fade completes,
+-- stops it — same stop_on_done machinery already exercised for fade_music().
+do
+    local orig_getInfo = love.filesystem.getInfo
+
+    love.filesystem.getInfo = function(p)
+        if type(p) == "string" then
+            if p == "assets/music/background.mp3"  then return true end
+            if p == "assets/music/background2.mp3" then return true end
+        end
+        return nil
+    end
+
+    package.loaded["core/lua/sound"] = nil
+    local S = require("core/lua/sound")
+    S.load(MANIFEST)
+
+    S.play_music("bg1")
+    S.fade_music_group("bg", 0, 1)
+    S.update(1.5) -- advance past the fade duration
+
+    assert(S.is_music_playing("bg1") == false, "expected bg1 to have stopped after group fade-out completed")
+
+    love.filesystem.getInfo = orig_getInfo
+    package.loaded["core/lua/sound"] = nil
+    print("PASS: fade_music_group() fades out and stops a track with playing_intent==true")
+end
+
+-- Test: fade_music_group() leaves tracks in the group alone if they were never
+-- started (playing_intent==false) — the caller doesn't know which specific track
+-- in the group is active, so untouched tracks must not be faded or stopped.
+do
+    local orig_getInfo = love.filesystem.getInfo
+    local orig_newSource = love.audio.newSource
+    local bg2_stop_calls = 0
+
+    love.filesystem.getInfo = function(p)
+        if type(p) == "string" then
+            if p == "assets/music/background.mp3"  then return true end
+            if p == "assets/music/background2.mp3" then return true end
+        end
+        return nil
+    end
+    love.audio.newSource = function(path, t)
+        local src = orig_newSource(path, t)
+        if path == "assets/music/background2.mp3" then
+            src.stop = function(self) bg2_stop_calls = bg2_stop_calls + 1 end
+        end
+        return src
+    end
+
+    package.loaded["core/lua/sound"] = nil
+    local S = require("core/lua/sound")
+    S.load(MANIFEST)
+
+    -- bg1 is started; bg2 is never played or faded, so its playing_intent stays false.
+    -- (play_music's own group-claim stops bg2 once as pre-existing, unrelated
+    -- behavior — reset the counter afterward so we isolate fade_music_group's effect.)
+    S.play_music("bg1")
+    bg2_stop_calls = 0
+    S.fade_music_group("bg", 0, 1)
+    S.update(1.5)
+
+    assert(bg2_stop_calls == 0, "expected bg2 (never started) to never be stop()'d by a group fade-out, got " .. bg2_stop_calls)
+
+    love.filesystem.getInfo = orig_getInfo
+    love.audio.newSource    = orig_newSource
+    package.loaded["core/lua/sound"] = nil
+    print("PASS: fade_music_group() leaves tracks with playing_intent==false untouched")
+end
+
+-- Test: fade_music_group() for an unknown group name is a silent no-op, matching
+-- how fade_music("nonexistent", ...) already behaves elsewhere in this file.
+do
+    Sound.fade_music_group("nonexistent_group", 0, 1)
+    Sound.update(0.016)
+    print("PASS: fade_music_group() runs without error for an unknown group name")
+end
+
 print("ALL TESTS PASSED")

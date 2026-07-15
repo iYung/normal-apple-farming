@@ -1,7 +1,7 @@
 local Fonts = require("game/fonts")
 local Sound = require("core/lua/sound")
 
-local ITEMS = { "Fullscreen / Window", "Keybinds", "Exit Settings", "Quit to Desktop" }
+local ITEMS = { "Fullscreen / Window", "Keybinds", "Exit Settings", "Exit to Title" }
 
 local _ACTION_LIST   = {"move_up","move_down","move_left","move_right","interact","pickup"}
 local _ACTION_LABELS = {"up","down","left","right","interact","pickup"}
@@ -62,7 +62,7 @@ local BAR_GAP    = 10
 local SettingsMenu = {}
 SettingsMenu.__index = SettingsMenu
 
-function SettingsMenu.new(settings_state, input, on_close)
+function SettingsMenu.new(settings_state, input, on_close, on_exit_to_title)
     local self = setmetatable({}, SettingsMenu)
     self.is_open = false
     self.selected = 1
@@ -75,6 +75,7 @@ function SettingsMenu.new(settings_state, input, on_close)
     self._state = settings_state
     self._input = input
     self._on_close = on_close
+    self._on_exit_to_title = on_exit_to_title
     self._subscreen = nil
     self._subscreen_selected = 1
     self._capturing = nil
@@ -268,8 +269,10 @@ function SettingsMenu:_confirm()
     elseif self.selected == 3 then
         self:close()
     elseif self.selected == 4 then
-        if self._on_close then self._on_close() end
-        love.event.quit()
+        self.is_open = false
+        if self._on_exit_to_title then
+            self._on_exit_to_title()
+        end
     end
 end
 

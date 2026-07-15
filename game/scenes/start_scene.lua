@@ -13,13 +13,16 @@ function StartScene.new(scene_manager, settings_state, input)
     self.scene_manager   = scene_manager
     self.settings_state  = settings_state
     self.esc_opens_settings = true
+    self.is_title_scene = true
     self._owns_input = (input == nil)
     self.input = input or Input.new({ interact = { "e" } })
     return self
 end
 
 function StartScene:on_enter()
-    Sound.play_music("menu")
+    if not Sound.is_music_playing("menu") then
+        Sound.play_music("menu")
+    end
 end
 
 function StartScene:on_exit()

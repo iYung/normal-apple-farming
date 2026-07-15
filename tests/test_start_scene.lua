@@ -25,6 +25,7 @@ do
     local scene = StartScene.new(sm, nil)
     assert(scene ~= nil, "StartScene.new() should return a scene")
     assert(scene.esc_opens_settings == true, "esc_opens_settings should be true")
+    assert(scene.is_title_scene == true, "is_title_scene should be true")
     print("PASS: StartScene construction")
 end
 
@@ -49,6 +50,25 @@ do
     Sound.play_music = orig_play_music
     assert(#played == 1 and played[1] == "menu", "on_enter should play 'menu' music")
     print("PASS: StartScene on_enter plays menu music")
+end
+
+-- ── on_enter skips play_music if menu already playing ────────────────────────
+
+do
+    local played = {}
+    local orig_play_music = Sound.play_music
+    Sound.play_music = function(name) played[#played + 1] = name end
+
+    local orig_is_music_playing = Sound.is_music_playing
+    Sound.is_music_playing = function(name) return name == "menu" end
+
+    local scene = StartScene.new(make_sm(), nil)
+    scene:on_enter()
+
+    Sound.play_music = orig_play_music
+    Sound.is_music_playing = orig_is_music_playing
+    assert(#played == 0, "on_enter should not call play_music when menu is already playing")
+    print("PASS: StartScene on_enter skips play_music when menu already playing")
 end
 
 -- ── E press fades music and switches to GameScene ────────────────────────────

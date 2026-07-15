@@ -146,6 +146,16 @@ function Sound.fade_music(name, target_vol, duration)
     end
 end
 
+function Sound.fade_music_group(group, target_vol, duration)
+    for _, entry in pairs(_music_tracks) do
+        if entry.group == group and entry.playing_intent == true then
+            entry.fade_target = target_vol
+            entry.fade_rate = (target_vol - entry.fade_vol) / duration
+            entry.stop_on_done = (target_vol == 0)
+        end
+    end
+end
+
 function Sound.stop_music(name)
     local entry = _music_tracks[name]
     if entry then
