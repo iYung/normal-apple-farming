@@ -51,4 +51,25 @@ do
     print("PASS: SettingsMenu item 4 with nil on_exit_to_title does not error")
 end
 
+-- ── open(opaque) stores the flag; draw() does not error in either mode ──────
+
+do
+    local menu = SettingsMenu.new(SettingsState.new(), nil, function() end, function() end)
+
+    menu:open(true)
+    assert(menu._opaque == true, "open(true) should set _opaque to true")
+    local ok, err = pcall(function() menu:draw() end)
+    assert(ok, "draw() should not error in opaque mode: " .. tostring(err))
+
+    menu:open()
+    assert(menu._opaque == false, "open() with no argument should default _opaque to false")
+    ok, err = pcall(function() menu:draw() end)
+    assert(ok, "draw() should not error in non-opaque mode: " .. tostring(err))
+
+    menu:open(false)
+    assert(menu._opaque == false, "open(false) should set _opaque to false")
+
+    print("PASS: SettingsMenu open(opaque) stores the flag and draw() handles both modes")
+end
+
 print("ALL TESTS PASSED")
