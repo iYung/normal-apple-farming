@@ -87,15 +87,26 @@ function love.load()
         Save.write_settings(ss:to_save())
     end
 
-    settings_menu = SettingsMenu.new(ss, input, on_close)
+    local function on_exit_to_title()
+        Save.write_settings(ss:to_save())
+        if manager.current and manager.current.is_title_scene then
+            love.event.quit()
+        else
+            Sound.fade_music_group("bg", 0, 2)
+            Sound.fade_music("menu", 1, 2)
+            manager:switch(StartScene.new(manager, ss, input))
+        end
+    end
+
+    settings_menu = SettingsMenu.new(ss, input, on_close, on_exit_to_title)
 end
 
 function love.update(dt)
     Sound.update(dt)
+    input:update()
     if settings_menu and settings_menu.is_open then
         settings_menu:update(dt)
     else
-        input:update()
         manager:update(dt)
     end
 end
