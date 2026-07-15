@@ -65,8 +65,12 @@ function love.load()
     base_map.cancel = { "escape" }  -- always escape, not user-configurable
     input = Input.new(base_map)
 
+    local function on_open_settings()
+        if settings_menu then settings_menu:open() end
+    end
+
     manager = SceneManager.new(LOGICAL_W, LOGICAL_H)
-    manager:switch(StartScene.new(manager, ss, input))
+    manager:switch(StartScene.new(manager, ss, input, on_open_settings))
     Sound.load({
         sfx_dir = "assets/sounds/",
         sfx = {
@@ -94,7 +98,7 @@ function love.load()
         else
             Sound.fade_music_group("bg", 0, 2)
             Sound.fade_music("menu", 1, 2)
-            manager:switch(StartScene.new(manager, ss, input))
+            manager:switch(StartScene.new(manager, ss, input, on_open_settings))
         end
     end
 
