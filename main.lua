@@ -103,10 +103,10 @@ end
 
 function love.update(dt)
     Sound.update(dt)
+    input:update()
     if settings_menu and settings_menu.is_open then
         settings_menu:update(dt)
     else
-        input:update()
         manager:update(dt)
     end
 end
