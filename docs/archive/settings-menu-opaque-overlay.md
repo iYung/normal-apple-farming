@@ -1,0 +1,6 @@
+## Settings Menu Opaque Overlay Checklist
+
+- [x] Task A — `assets/images/settings_background.png` — Copy `../wip/assets/images/settings_pattern_1.png` into this path (first frame only, no `_2` frame, no animation).
+- [x] Task B — `game/scenes/settings_menu.lua` — In `SettingsMenu.new`, load `self._img_bg_opaque = love.graphics.newImage("assets/images/settings_background.png")`. In `SettingsMenu:open(opaque)`, add the `opaque` param and store `self._opaque = opaque or false`. In `SettingsMenu:draw()`, in both the keybinds-subscreen branch and the main-items branch, replace the unconditional `setColor(0,0,0,0.55)` + `rectangle("fill",...)` with a branch: if `self._opaque`, `setColor(1,1,1,1)` + `draw(self._img_bg_opaque, 0, 0)`; else keep the existing semi-transparent rectangle.
+- [x] Task C — `main.lua` — Update all 3 call sites that call `settings_menu:open()` (the `on_open_settings` closure, the ESC `keypressed` handler, the gamepad `"start"` button handler) to pass `manager.current and manager.current.is_title_scene` as the `opaque` argument.
+- [x] Task D — `tests/test_settings_menu.lua` — Add assertions that `menu:open(true)` sets `menu._opaque == true`, and `menu:open()` (no arg) / `menu:open(false)` sets `menu._opaque == false`. Also assert `draw()` does not error in either mode (headless stubs make this safe).

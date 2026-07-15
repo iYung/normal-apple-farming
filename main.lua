@@ -66,7 +66,9 @@ function love.load()
     input = Input.new(base_map)
 
     local function on_open_settings()
-        if settings_menu then settings_menu:open() end
+        if settings_menu then
+            settings_menu:open(manager.current and manager.current.is_title_scene)
+        end
     end
 
     manager = SceneManager.new(LOGICAL_W, LOGICAL_H)
@@ -137,7 +139,7 @@ function love.keypressed(key)
         if manager.current and manager.current.input then
             settings_menu._input = manager.current.input
         end
-        settings_menu:open()
+        settings_menu:open(manager.current and manager.current.is_title_scene)
     end
 end
 
@@ -150,7 +152,7 @@ function love.gamepadpressed(joystick, button)
     end
     if button == "start" then
         if settings_menu and manager.current and manager.current.esc_opens_settings then
-            settings_menu:open()
+            settings_menu:open(manager.current.is_title_scene)
         end
     end
 end

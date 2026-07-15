@@ -87,14 +87,16 @@ function SettingsMenu.new(settings_state, input, on_close, on_exit_to_title)
     self._prev_sub_escape  = false
     self._img_btn     = love.graphics.newImage("assets/images/menu_btn.png")
     self._img_btn_sel = love.graphics.newImage("assets/images/menu_btn_selected.png")
+    self._img_bg_opaque = love.graphics.newImage("assets/images/settings_background.png")
     self._font_btn    = Fonts.new(22)
     self._font_vol    = Fonts.new(15)
     self._sub_btn_y0  = H / 2 - #_ACTION_LIST * BTN_GAP / 2 - BTN_H / 2  -- centres 5 sub-screen rows
     return self
 end
 
-function SettingsMenu:open()
+function SettingsMenu:open(opaque)
     self.is_open  = true
+    self._opaque  = opaque or false
     self.selected = 1
     self._subscreen = nil
     self._capturing = nil
@@ -329,8 +331,13 @@ function SettingsMenu:draw()
 
     if self._subscreen == "keybinds" then
         -- Background
-        love.graphics.setColor(0, 0, 0, 0.55)
-        love.graphics.rectangle("fill", 0, 0, W, H)
+        if self._opaque then
+            love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.draw(self._img_bg_opaque, 0, 0)
+        else
+            love.graphics.setColor(0, 0, 0, 0.55)
+            love.graphics.rectangle("fill", 0, 0, W, H)
+        end
 
         local sub_count = #_ACTION_LIST + 1
         love.graphics.setFont(self._font_btn)
@@ -387,9 +394,15 @@ function SettingsMenu:draw()
         return
     end
 
-    -- Semi-transparent overlay background
-    love.graphics.setColor(0, 0, 0, 0.55)
-    love.graphics.rectangle("fill", 0, 0, W, H)
+    -- Background: opaque image when the title/start scene is behind us,
+    -- semi-transparent overlay when opened mid-game
+    if self._opaque then
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.draw(self._img_bg_opaque, 0, 0)
+    else
+        love.graphics.setColor(0, 0, 0, 0.55)
+        love.graphics.rectangle("fill", 0, 0, W, H)
+    end
 
     love.graphics.setFont(self._font_btn)
     local vis = _visible_items(ITEMS, self._input)
