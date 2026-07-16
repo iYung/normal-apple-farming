@@ -26,7 +26,7 @@ local ActionsInfo  = require("game/ui/actions_info")
 
 local VIEW_W  = 1280
 local VIEW_H  = 720
-local WORLD_W = 2560
+local WORLD_W = 2592
 local WORLD_H = 1440
 
 local GameScene = {}
@@ -121,14 +121,18 @@ function GameScene:on_enter()
     self.money_info   = MoneyInfo.new(self.game_state)
     self.actions_info = ActionsInfo.new(self.input)
 
-    -- Background tileset
+    -- Background tileset: precompute a grid of 48x48 tile positions spanning
+    -- the world (54 columns x 30 rows), drawn individually in draw().
     if love.filesystem.getInfo("assets/images/tileset.png") then
-        local img = love.graphics.newImage("assets/images/tileset.png")
-        img:setWrap("repeat", "repeat")
-        local tile = img:getWidth()
-        local quad = love.graphics.newQuad(0, 0, WORLD_W, WORLD_H, tile, tile)
-        self._bg_img  = img
-        self._bg_quad = quad
+        self._bg_img = love.graphics.newImage("assets/images/tileset.png")
+        self._bg_tiles = {}
+        local cols = WORLD_W / 48
+        local rows = WORLD_H / 48
+        for row = 0, rows - 1 do
+            for col = 0, cols - 1 do
+                table.insert(self._bg_tiles, { x = col * 48, y = row * 48 })
+            end
+        end
     end
     if love.filesystem.getInfo("assets/images/items/wire.png") then
         self._wire_preview_img = love.graphics.newImage("assets/images/items/wire.png")
@@ -235,14 +239,14 @@ end
 function GameScene:draw()
     self.camera:attach()
 
-    -- Background
-    love.graphics.setColor(0.25, 0.55, 0.2, 1)
-    love.graphics.rectangle("fill", 0, 0, WORLD_W, WORLD_H)
-    if self._bg_img then
-        love.graphics.setColor(1, 1, 1, 0.4)
-        love.graphics.draw(self._bg_img, self._bg_quad, 0, 0)
+    -- Background: draw each precomputed 48x48 tile individually, full opacity.
+    if self._bg_img and self._bg_tiles then
+        local scale_x = 48 / self._bg_img:getWidth()
+        local scale_y = 48 / self._bg_img:getHeight()
+        for _, t in ipairs(self._bg_tiles) do
+            love.graphics.draw(self._bg_img, t.x, t.y, 0, scale_x, scale_y)
+        end
     end
-    love.graphics.setColor(1, 1, 1, 1)
 
     -- Wire placement preview
     if Detector.is_roll(self.player.held_item) then
