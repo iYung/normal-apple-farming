@@ -55,6 +55,7 @@ local scene2 = ctx2.sm.current
 love.filesystem.getInfo = orig_getInfo
 
 assert(scene2._bg_img ~= nil, "scene2._bg_img should be set once getInfo is truthy")
+assert(scene2._border_img ~= nil, "scene2._border_img should be set once getInfo is truthy")
 assert(type(scene2._bg_tiles) == "table", "scene2._bg_tiles should be a table")
 assert(#scene2._bg_tiles == 54 * 30,
     "expected 1620 tiles, got " .. #scene2._bg_tiles)
@@ -76,6 +77,32 @@ for i, t in ipairs(scene2._bg_tiles) do
     assert(t.y >= 0 and t.y < 1440, "tile " .. i .. " y out of world bounds: " .. t.y)
 end
 print("PASS: all tile coordinates are multiples of 48 within world bounds")
+
+-- Test 3b: outer ring of tiles is flagged is_border, interior tiles are not --
+-- Only the player/animals can reach the interior (Mapper.clamp keeps them
+-- inset from the world edge), so the outermost ring of tiles (col 0, last
+-- col, row 0, last row) should be flagged as border tiles.
+
+local cols, rows = 54, 30
+local border_count, interior_count = 0, 0
+for _, t in ipairs(scene2._bg_tiles) do
+    local col = t.x / 48
+    local row = t.y / 48
+    local expected_border = row == 0 or row == rows - 1 or col == 0 or col == cols - 1
+    assert(t.is_border == expected_border,
+        "tile at col=" .. col .. " row=" .. row .. " expected is_border=" ..
+        tostring(expected_border) .. ", got " .. tostring(t.is_border))
+    if t.is_border then
+        border_count = border_count + 1
+    else
+        interior_count = interior_count + 1
+    end
+end
+assert(border_count == 2 * cols + 2 * (rows - 2),
+    "expected " .. (2 * cols + 2 * (rows - 2)) .. " border tiles, got " .. border_count)
+assert(interior_count == 1620 - border_count,
+    "border + interior should account for all 1620 tiles")
+print("PASS: outer ring of tiles is flagged is_border, interior tiles are not")
 
 -- Test 4: old flat green background rectangle fill is gone -------------------
 -- Monkey-patch love.graphics.setColor/rectangle to record every rectangle

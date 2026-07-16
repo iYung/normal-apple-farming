@@ -122,15 +122,22 @@ function GameScene:on_enter()
     self.actions_info = ActionsInfo.new(self.input)
 
     -- Background tileset: precompute a grid of 48x48 tile positions spanning
-    -- the world (54 columns x 30 rows), drawn individually in draw().
+    -- the world (54 columns x 30 rows), drawn individually in draw(). The
+    -- outer ring of tiles falls outside the area the player/animals can
+    -- reach (Mapper.clamp keeps entities inset from the world edge), so
+    -- those tiles are flagged to draw with the border tile instead.
     if love.filesystem.getInfo("assets/images/tileset.png") then
         self._bg_img = love.graphics.newImage("assets/images/tileset.png")
+        if love.filesystem.getInfo("assets/images/border_tile.png") then
+            self._border_img = love.graphics.newImage("assets/images/border_tile.png")
+        end
         self._bg_tiles = {}
         local cols = WORLD_W / 48
         local rows = WORLD_H / 48
         for row = 0, rows - 1 do
             for col = 0, cols - 1 do
-                table.insert(self._bg_tiles, { x = col * 48, y = row * 48 })
+                local is_border = row == 0 or row == rows - 1 or col == 0 or col == cols - 1
+                table.insert(self._bg_tiles, { x = col * 48, y = row * 48, is_border = is_border })
             end
         end
     end
@@ -240,11 +247,19 @@ function GameScene:draw()
     self.camera:attach()
 
     -- Background: draw each precomputed 48x48 tile individually, full opacity.
+    -- Border-ring tiles (outside the area the player/animals can reach) draw
+    -- with the border tile instead of the walkable tileset tile.
     if self._bg_img and self._bg_tiles then
         local scale_x = 48 / self._bg_img:getWidth()
         local scale_y = 48 / self._bg_img:getHeight()
+        local border_scale_x = self._border_img and 48 / self._border_img:getWidth()
+        local border_scale_y = self._border_img and 48 / self._border_img:getHeight()
         for _, t in ipairs(self._bg_tiles) do
-            love.graphics.draw(self._bg_img, t.x, t.y, 0, scale_x, scale_y)
+            if t.is_border and self._border_img then
+                love.graphics.draw(self._border_img, t.x, t.y, 0, border_scale_x, border_scale_y)
+            else
+                love.graphics.draw(self._bg_img, t.x, t.y, 0, scale_x, scale_y)
+            end
         end
     end
 
