@@ -24,7 +24,7 @@ function Mapper.remove(grid, tx, ty)
     grid[Mapper.key(tx, ty)] = nil
 end
 
-Mapper.WORLD_W = 2560
+Mapper.WORLD_W = 2592
 Mapper.WORLD_H = 1440
 
 function Mapper.clamp(x, y, w, h)
